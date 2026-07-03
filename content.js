@@ -222,7 +222,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "P.T. Vinh, T.H.B. Huy, P.V. Phu, N. Cho, D. Kim*, A multi-objective approach for integrated energy hub with waste incineration plants integrating carbon capture technology, and electric vehicle parking lots under uncertainties, Sustainable Energy, Grids and Networksnternational Journal of Energy Research, March, 2026 (SCIE)",
+          "P.T. Vinh, T.H.B. Huy, P.V. Phu, N. Cho, D. Kim*, A multi-objective approach for integrated energy hub with waste incineration plants integrating carbon capture technology, and electric vehicle parking lots under uncertainties, Sustainable Energy, Grids and Networks, March, 2026 (SCIE)",
         url: "https://doi.org/10.1016/j.segan.2026.102121",
       },
       {
@@ -476,7 +476,7 @@ window.LAB_DATA = {
       {
         citation:
           "T.H.B. Huy, A.T.H. Nguyen, K.T. Nguyen, A. Maghami, C. Papadimitriou, P.H. Nguyen, D. Kim, Rolling Horizon-Based Scheduling for Flexibility Provision in Multi-Energy Systems, IEEE EEEIC, Crete, Greece, July, 2025",
-        url: "https://ieeexplore-ieee-org-ssl.eproxy.sch.ac.kr:8443/document/11169026",
+        url: "https://doi.org/10.1109/EEEIC/ICPSEUROPE64998.2025.11169026",
       },
       {
         citation:
@@ -491,7 +491,7 @@ window.LAB_DATA = {
       {
         citation:
           "D. Kim, S. An, A k-Resilient Node Deployment Scheme Using an Air Vehicle in Wireless Sensor Networks, ICSNC, Barcelona, Spain, November, 2015",
-        url: "https://www.researchgate.net/profile/Carlos_Westphall/publication/283853203_ICSNC_2015_The_Tenth_International_Conference_on_Systems_and_Networks_Communications/links/564875a908ae5",
+        url: "https://www.thinkmind.org/library/ICSNC/ICSNC_2015/icsnc_2015_4_40_20180.html",
       },
       {
         citation:
