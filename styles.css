@@ -66,19 +66,21 @@ img {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  min-width: 220px;
+  gap: 14px;
+  min-width: 270px;
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  color: var(--white);
-  background: linear-gradient(135deg, var(--teal), var(--sky));
-  border-radius: 8px;
-  font-weight: 800;
+  display: block;
+  flex: 0 0 auto;
+  width: 86px;
+  height: 28px;
+  overflow: hidden;
+  background-color: var(--teal);
+  background-image: url("https://home.sch.ac.kr/_res/sch/img/img_intro_43.png");
+  background-position: -30px -8px;
+  background-repeat: no-repeat;
+  background-size: 172px auto;
 }
 
 .brand strong,
