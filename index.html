@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="IoT Network Lab website at Soonchunhyang University"
+    />
+    <title>IoT Network Lab | Soonchunhyang University</title>
+    <link rel="stylesheet" href="styles.css?v=20260703d" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#home" aria-label="IoT Network Lab home">
+        <span class="brand-mark" aria-hidden="true">IN</span>
+        <span>
+          <strong>IoT Network Lab</strong>
+          <small>Soonchunhyang University</small>
+        </span>
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="#about">About</a>
+        <a href="#research">Research</a>
+        <a href="#publications">Publications</a>
+        <a href="#members">Members</a>
+        <a href="#join">Join</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="home">
+      <section class="hero" aria-labelledby="hero-title">
+        <img
+          class="hero-image"
+          src="assets/lab-hero.png"
+          alt="IoT, smart energy, connected vehicle research visual"
+        />
+        <div class="hero-shade" aria-hidden="true"></div>
+
+        <div class="hero-content">
+          <p class="eyebrow">Department of Internet of Things</p>
+          <h1 id="hero-title">IoT Network Lab</h1>
+          <p class="hero-lead" id="hero-lead"></p>
+          <div class="hero-actions">
+            <a class="button primary" href="#research">Explore Research</a>
+            <a class="button secondary" href="#contact">Contact Us</a>
+          </div>
+        </div>
+
+        <aside class="notice-board" aria-labelledby="notice-title">
+          <div class="section-kicker">Notice</div>
+          <h2 id="notice-title">Announcements</h2>
+          <ul class="notice-list" id="notice-list"></ul>
+        </aside>
+      </section>
+
+      <section class="quick-stats" aria-label="Lab highlights">
+        <div>
+          <strong data-count="journals">0</strong>
+          <span>International Journals</span>
+        </div>
+        <div>
+          <strong data-count="conferences">0</strong>
+          <span>Conferences</span>
+        </div>
+        <div>
+          <strong data-count="patents">0</strong>
+          <span>Patents</span>
+        </div>
+        <div>
+          <strong data-count="research">0</strong>
+          <span>Research Tracks</span>
+        </div>
+      </section>
+
+      <section class="section about-section" id="about">
+        <div class="section-heading">
+          <p class="section-kicker">About</p>
+          <h2>Introduction</h2>
+        </div>
+        <div class="about-grid">
+          <div class="about-copy">
+            <h3 id="professor-name"></h3>
+            <p class="role-line" id="professor-role"></p>
+            <p class="korean-line" id="professor-korean"></p>
+            <div id="professor-bio"></div>
+          </div>
+          <div class="lab-profile" aria-label="Lab profile">
+            <dl id="lab-profile-list"></dl>
+          </div>
+        </div>
+      </section>
+
+      <section class="section research-section" id="research">
+        <div class="section-heading">
+          <p class="section-kicker">Research</p>
+          <h2>Research Areas</h2>
+          <p id="research-summary"></p>
+        </div>
+
+        <div class="research-grid" id="research-grid"></div>
+      </section>
+
+      <section class="section publications-section" id="publications">
+        <div class="section-heading inline-heading">
+          <div>
+            <p class="section-kicker">Publications</p>
+            <h2>Publications & Patents</h2>
+          </div>
+          <a
+            class="text-link"
+            href="https://sites.google.com/view/iot-network-lab-sch/publications"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Legacy List
+          </a>
+        </div>
+
+        <div class="publication-controls" aria-label="Publication filters">
+          <div class="segment-control" role="group" aria-label="Publication type">
+            <button class="segment-button active" type="button" data-pub-filter="all">All</button>
+            <button class="segment-button" type="button" data-pub-filter="journals">Journals</button>
+            <button class="segment-button" type="button" data-pub-filter="conferences">Conferences</button>
+            <button class="segment-button" type="button" data-pub-filter="patents">Patents</button>
+          </div>
+          <label class="search-label">
+            <span>Search</span>
+            <input id="publication-search" type="search" placeholder="Title, author, venue, year" />
+          </label>
+        </div>
+
+        <div class="publication-list" id="publication-list"></div>
+      </section>
+
+      <section class="section members-section" id="members">
+        <div class="section-heading">
+          <p class="section-kicker">Members</p>
+          <h2>People</h2>
+        </div>
+
+        <div class="members-layout">
+          <article class="professor-card">
+            <div class="avatar" aria-hidden="true">DK</div>
+            <div>
+              <p class="role">Professor</p>
+              <h3 id="member-professor-name"></h3>
+              <p id="member-professor-interest"></p>
+              <a id="member-professor-email" href=""></a>
+            </div>
+          </article>
+
+          <div class="member-groups" id="member-groups"></div>
+        </div>
+      </section>
+
+      <section class="section join-section" id="join">
+        <div class="join-content">
+          <p class="section-kicker">Join Us</p>
+          <h2>Join IoT Network Lab</h2>
+          <p id="join-copy"></p>
+          <a class="button primary" href="mailto:daeheekim@sch.ac.kr">Contact Prof. Kim</a>
+        </div>
+      </section>
+
+      <section class="section contact-section" id="contact">
+        <div class="section-heading">
+          <p class="section-kicker">Contact</p>
+          <h2>Location & Contact</h2>
+        </div>
+
+        <div class="contact-grid" id="contact-grid"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>© <span id="year"></span> IoT Network Lab, Soonchunhyang University.</p>
+      <a href="https://sites.google.com/view/iot-network-lab-sch" target="_blank" rel="noreferrer">
+        Legacy Google Site
+      </a>
+    </footer>
+
+    <script src="content.js?v=20260703d"></script>
+    <script src="script.js?v=20260703d"></script>
+  </body>
+</html>
