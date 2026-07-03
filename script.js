@@ -63,12 +63,12 @@ const extractYear = (text) => {
 
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-const formattedCitation = (text, includeJournalHighlights) => {
-  const paragraph = make("p", "citation");
-  const patterns = ["D\\. Kim\\*?"];
+const appendHighlightedText = (target, text, patterns) => {
+  if (!text) return;
 
-  if (includeJournalHighlights) {
-    patterns.push(...journalNames.map(escapeRegExp));
+  if (!patterns.length) {
+    target.append(document.createTextNode(text));
+    return;
   }
 
   const highlightPattern = `(?:${patterns.join("|")})`;
@@ -77,7 +77,28 @@ const formattedCitation = (text, includeJournalHighlights) => {
 
   text.split(splitPattern).forEach((part) => {
     if (!part) return;
-    paragraph.append(exactPattern.test(part) ? make("strong", "", part) : document.createTextNode(part));
+    target.append(exactPattern.test(part) ? make("strong", "", part) : document.createTextNode(part));
+  });
+};
+
+const formattedCitation = (text, includeJournalHighlights) => {
+  const paragraph = make("p", "citation");
+  const hasMarkedAuthor = /\[\[[^\]]+\]\]/.test(text);
+  const patterns = hasMarkedAuthor ? [] : ["D\\. Kim\\*?"];
+
+  if (includeJournalHighlights) {
+    patterns.push(...journalNames.map(escapeRegExp));
+  }
+
+  text.split(/(\[\[[^\]]+\]\])/g).forEach((part) => {
+    const markedText = part.match(/^\[\[([^\]]+)\]\]$/);
+
+    if (markedText) {
+      paragraph.append(make("strong", "", markedText[1]));
+      return;
+    }
+
+    appendHighlightedText(paragraph, part, patterns);
   });
 
   return paragraph;

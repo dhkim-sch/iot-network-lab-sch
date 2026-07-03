@@ -207,7 +207,7 @@ window.LAB_DATA = {
     journals: [
       {
         citation:
-          "N.K.T. Dung, T.H.B. Huy, P.V. Phu, D. Kim, D. Kim*, Multi-objective framework for integrated energy hubs using IGDT: Incorporating liquefied natural gas-fueled oxy-fuel combined cycle and P2G technologies, Gas Science and Engineering, June, 2026 (SCIE)",
+          "N.K.T. Dung, T.H.B. Huy, P.V. Phu, D. Kim, [[D. Kim*]], Multi-objective framework for integrated energy hubs using IGDT: Incorporating liquefied natural gas-fueled oxy-fuel combined cycle and P2G technologies, Gas Science and Engineering, June, 2026 (SCIE)",
         url: "https://doi.org/10.1016/j.jgsce.2026.205895",
       },
       {
@@ -252,7 +252,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "A. Shafew, D. Kim, D. Kim*, Simple 1D CNN Model for Accurate Classification of Gait Patterns Using GRF Data, Journal of Information and Communication Convergence Engineering, December, 2024 (SCOPUS)",
+          "A. Shafew, D. Kim, [[D. Kim*]], Simple 1D CNN Model for Accurate Classification of Gait Patterns Using GRF Data, Journal of Information and Communication Convergence Engineering, December, 2024 (SCOPUS)",
         url: "https://doi.org/10.56977/jicce.2024.22.4.303",
       },
       {
@@ -327,7 +327,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "H.T. Dinh, D. Kim, D. Kim*, MILP-based optimal day-ahead scheduling for a system-centric community energy management system supporting different types of homes and energy trading, Scientific Reports, October, 2022 (SCIE)",
+          "H.T. Dinh, D. Kim, [[D. Kim*]], MILP-based optimal day-ahead scheduling for a system-centric community energy management system supporting different types of homes and energy trading, Scientific Reports, October, 2022 (SCIE)",
         url: "https://www.nature.com/articles/s41598-022-22293-y",
       },
       {
@@ -367,7 +367,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "D. Kim, J. Yun, D. Kim*, An Energy-Efficient Secure Forwarding Scheme for QoS Guarantee in Wireless Sensor Networks, Electronics, September, 2020 (SCIE)",
+          "D. Kim, J. Yun, [[D. Kim*]], An Energy-Efficient Secure Forwarding Scheme for QoS Guarantee in Wireless Sensor Networks, Electronics, September, 2020 (SCIE)",
         url: "https://www.mdpi.com/2079-9292/9/9/1418",
       },
       {
@@ -377,7 +377,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "H.T. Dinh, J. Yun, D. Kim, K. Lee, D. Kim*, A home energy management system with renewable energy and energy storage utilizing main grid and electricity selling, IEEE Access, March, 2020 (SCIE)",
+          "H.T. Dinh, J. Yun, D. Kim, K. Lee, [[D. Kim*]], A home energy management system with renewable energy and energy storage utilizing main grid and electricity selling, IEEE Access, March, 2020 (SCIE)",
         url: "https://ieeexplore.ieee.org/abstract/document/9027829/",
       },
       {
@@ -387,7 +387,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "D. Kim, K. Lee, D. Kim*, An Energy Efficient Smart Crest Factor Reduction Scheme in Non-Contiguous Carrier Aggregated Signals, IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences, March, 2019 (SCIE)",
+          "D. Kim, K. Lee, [[D. Kim*]], An Energy Efficient Smart Crest Factor Reduction Scheme in Non-Contiguous Carrier Aggregated Signals, IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences, March, 2019 (SCIE)",
         url: "https://www.jstage.jst.go.jp/article/transfun/E102.A/3/E102.A_604/_article/-char/ja/",
       },
       {
@@ -407,7 +407,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "E. Kim, D. Kim, D. Kim, Adaptive Priority-based Medium Access Control Protocol for IEEE 802.15. 6 Wireless Body Sensor Networks, Sensors and Materials, January, 2018 (SCIE)",
+          "E. Kim, [[D. Kim]], D. Kim, Adaptive Priority-based Medium Access Control Protocol for IEEE 802.15. 6 Wireless Body Sensor Networks, Sensors and Materials, January, 2018 (SCIE)",
         url: "https://pdfs.semanticscholar.org/8d84/f70b804d64842a4cf442210ea79c974a94ce.pdf",
       },
       {
@@ -417,7 +417,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "D. Kim, H. Nam, D. Kim, Adaptive code dissemination based on link quality in wireless sensor networks, IEEE Internet of Things, June, 2017 (SCIE)",
+          "[[D. Kim]], H. Nam, D. Kim, Adaptive code dissemination based on link quality in wireless sensor networks, IEEE Internet of Things, June, 2017 (SCIE)",
         url: "https://ieeexplore.ieee.org/abstract/document/7795240/",
       },
       {
@@ -437,7 +437,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "D. Kim, D. Kim, S. An, Source authentication for code dissemination supporting dynamic packet size in wireless sensor networks, Sensors, June, 2016 (SCIE)",
+          "[[D. Kim]], D. Kim, S. An, Source authentication for code dissemination supporting dynamic packet size in wireless sensor networks, Sensors, June, 2016 (SCIE)",
         url: "https://www.mdpi.com/1424-8220/16/7/1063",
       },
       {
@@ -447,7 +447,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "D. Kim, D. Kim, S. An, Communication pattern based key establishment scheme in heterogeneous wireless sensor networks, KSII Transactions on Internet and Information Systems, March, 2016 (SCIE)",
+          "[[D. Kim]], D. Kim, S. An, Communication pattern based key establishment scheme in heterogeneous wireless sensor networks, KSII Transactions on Internet and Information Systems, March, 2016 (SCIE)",
         url: "https://www.koreascience.or.kr/article/JAKO201617955654377.page",
       },
       {
