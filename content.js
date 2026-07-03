@@ -109,14 +109,14 @@ window.LAB_DATA = {
         role: "Integrated Master/Ph.D. Student",
         email: "haphuongthy2003@sch.ac.kr",
         since: "2026~",
-        interests: "Energy load forecasting",
+        interests: "Energy Load Forecasting",
       },
       {
         name: "Le Thi Xuan Thu",
         role: "Master Student",
         email: "thulexuan@sch.ac.kr",
         since: "2026~",
-        interests: "Energy load forecasting",
+        interests: "AI-based Intrusion Detection Systems for In-vehicle Networks",
       },
     ],
 
