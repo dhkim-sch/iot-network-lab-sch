@@ -1,14 +1,19 @@
 :root {
-  --ink: #16211f;
-  --muted: #5b6865;
-  --soft: #f5f7f4;
-  --line: #dfe6e1;
+  --ink: #15213f;
+  --muted: #5e6878;
+  --soft: #f3f7fc;
+  --line: #d9e2f0;
   --white: #ffffff;
-  --teal: #0f766e;
-  --green: #2f8f46;
-  --gold: #d98a1f;
-  --charcoal: #182724;
-  --shadow: 0 18px 48px rgba(20, 33, 31, 0.14);
+  --teal: #26539c;
+  --green: #1c9ad6;
+  --sky: #1c9ad6;
+  --light-blue: #72c6ef;
+  --purple: #4d207a;
+  --gold: #9b7e4b;
+  --silver: #939595;
+  --charcoal: #10254b;
+  --blue-soft: #eaf2fb;
+  --shadow: 0 18px 48px rgba(38, 83, 156, 0.16);
 }
 
 * {
@@ -54,7 +59,7 @@ img {
   min-height: 72px;
   padding: 12px 44px;
   background: rgba(255, 255, 255, 0.92);
-  border-bottom: 1px solid rgba(223, 230, 225, 0.82);
+  border-bottom: 1px solid rgba(217, 226, 240, 0.88);
   backdrop-filter: blur(16px);
 }
 
@@ -71,7 +76,7 @@ img {
   width: 42px;
   height: 42px;
   color: var(--white);
-  background: linear-gradient(135deg, var(--teal), var(--green));
+  background: linear-gradient(135deg, var(--teal), var(--sky));
   border-radius: 8px;
   font-weight: 800;
 }
@@ -110,7 +115,7 @@ img {
 .site-nav a:hover,
 .site-nav a.active {
   color: var(--teal);
-  background: #edf7f4;
+  background: var(--blue-soft);
 }
 
 .nav-toggle {
@@ -170,8 +175,8 @@ img {
 
 .hero-shade {
   background:
-    linear-gradient(90deg, rgba(17, 31, 29, 0.9) 0%, rgba(17, 31, 29, 0.74) 38%, rgba(17, 31, 29, 0.22) 100%),
-    linear-gradient(0deg, rgba(17, 31, 29, 0.68) 0%, rgba(17, 31, 29, 0) 42%);
+    linear-gradient(90deg, rgba(16, 37, 75, 0.94) 0%, rgba(38, 83, 156, 0.78) 38%, rgba(28, 154, 214, 0.2) 100%),
+    linear-gradient(0deg, rgba(16, 37, 75, 0.72) 0%, rgba(16, 37, 75, 0) 42%);
 }
 
 .hero-content,
@@ -227,11 +232,11 @@ img {
 .button.primary {
   color: var(--white);
   background: var(--teal);
-  box-shadow: 0 14px 28px rgba(15, 118, 110, 0.28);
+  box-shadow: 0 14px 28px rgba(38, 83, 156, 0.3);
 }
 
 .button.primary:hover {
-  background: #0b625b;
+  background: #1f4380;
 }
 
 .button.secondary {
@@ -251,7 +256,7 @@ img {
   justify-content: flex-end;
   padding: 28px;
   color: var(--white);
-  background: rgba(17, 31, 29, 0.54);
+  background: rgba(16, 37, 75, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 8px;
   backdrop-filter: blur(18px);
@@ -280,7 +285,7 @@ img {
 }
 
 .notice-list time {
-  color: #f7c870;
+  color: #f4d492;
   font-size: 0.86rem;
   font-weight: 800;
 }
@@ -433,7 +438,7 @@ img {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(20, 33, 31, 0.07);
+  box-shadow: 0 10px 30px rgba(38, 83, 156, 0.08);
 }
 
 .card-index {
@@ -443,7 +448,7 @@ img {
   width: 42px;
   height: 42px;
   color: var(--teal);
-  background: #edf7f4;
+  background: linear-gradient(135deg, var(--blue-soft), rgba(114, 198, 239, 0.42));
   border-radius: 8px;
   font-weight: 900;
 }
@@ -454,7 +459,7 @@ img {
 }
 
 .publications-section {
-  background: #fbfcfa;
+  background: #f8fbff;
 }
 
 .publication-list {
@@ -610,7 +615,7 @@ img {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(20, 33, 31, 0.07);
+  box-shadow: 0 10px 30px rgba(38, 83, 156, 0.08);
 }
 
 .professor-card {
@@ -708,8 +713,8 @@ img {
 .join-section {
   color: var(--white);
   background:
-    linear-gradient(135deg, rgba(24, 39, 36, 0.96), rgba(15, 118, 110, 0.92)),
-    radial-gradient(circle at 12% 20%, rgba(217, 138, 31, 0.28), transparent 34%);
+    linear-gradient(135deg, rgba(16, 37, 75, 0.97), rgba(38, 83, 156, 0.94) 58%, rgba(77, 32, 122, 0.9)),
+    radial-gradient(circle at 12% 20%, rgba(155, 126, 75, 0.3), transparent 34%);
 }
 
 .join-content {
