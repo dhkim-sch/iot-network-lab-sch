@@ -568,6 +568,11 @@ img {
   margin: 7px 0 0;
 }
 
+.citation strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
 .publication-type {
   display: inline-flex;
   margin-bottom: 2px;

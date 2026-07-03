@@ -8,6 +8,37 @@ const publicationButtons = document.querySelectorAll("[data-pub-filter]");
 
 let publicationFilter = "all";
 
+const journalNames = [
+  "IEICE Transactions on Fundamentals of Electronics, Communications and Computer Sciences",
+  "Engineering Applications of Artificial Intelligence",
+  "Journal of Information and Communication Convergence Engineering",
+  "KSII Transactions on Internet and Information Systems",
+  "Sustainable Energy, Grids and Networksnternational Journal of Energy Research",
+  "IEICE Transactions on Information and Systems",
+  "Energy Conversion and Management",
+  "Expert Systems with Applications",
+  "Sustainable Energy, Grids and Networks",
+  "Sustainable Cities and Society",
+  "Computers, Materials & Continua",
+  "Gas Science and Engineering",
+  "Knowledge-Based Systems",
+  "Journal of Internet Technology",
+  "Journal of Energy Storage",
+  "Vehicular Communications",
+  "Sensors and Materials",
+  "Applied Soft Computing",
+  "Energy and Buildings",
+  "Scientific Reports",
+  "IEEE Internet of Things",
+  "IEEE Sensors",
+  "Applied Sciences",
+  "Applied Energy",
+  "IEEE Access",
+  "Electronics",
+  "Sensors",
+  "Wireless Networks",
+].sort((a, b) => b.length - a.length);
+
 const make = (tag, className, text) => {
   const element = document.createElement(tag);
   if (className) element.className = className;
@@ -28,6 +59,28 @@ const setText = (selector, value) => {
 const extractYear = (text) => {
   const matches = text.match(/20\d{2}|19\d{2}/g);
   return matches ? matches[matches.length - 1] : "";
+};
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const formattedCitation = (text, includeJournalHighlights) => {
+  const paragraph = make("p", "citation");
+  const patterns = ["D\\. Kim\\*?"];
+
+  if (includeJournalHighlights) {
+    patterns.push(...journalNames.map(escapeRegExp));
+  }
+
+  const highlightPattern = `(?:${patterns.join("|")})`;
+  const splitPattern = new RegExp(`(${highlightPattern})`, "g");
+  const exactPattern = new RegExp(`^${highlightPattern}$`);
+
+  text.split(splitPattern).forEach((part) => {
+    if (!part) return;
+    paragraph.append(exactPattern.test(part) ? make("strong", "", part) : document.createTextNode(part));
+  });
+
+  return paragraph;
 };
 
 const renderNotices = () => {
@@ -119,11 +172,11 @@ const publicationGroups = () => [
   ["patents", "Patents", data.publications.patents.map((citation) => ({ citation }))],
 ];
 
-const renderPublicationItem = (item, category, index) => {
+const renderPublicationItem = (item, key, category, index) => {
   const article = make("article", "publication-item");
   const yearLabel = make("time", "", extractYear(item.citation) || String(index + 1));
   const body = make("div");
-  const citation = make("p", "citation", item.citation);
+  const citation = formattedCitation(item.citation, key === "journals");
 
   body.append(make("span", "publication-type", category));
   body.append(citation);
@@ -165,7 +218,7 @@ const renderPublications = () => {
     section.append(heading);
 
     filtered.forEach((item, index) => {
-      section.append(renderPublicationItem(item, label, index));
+      section.append(renderPublicationItem(item, key, label, index));
     });
 
     target.append(section);
