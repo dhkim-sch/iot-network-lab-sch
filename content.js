@@ -31,8 +31,8 @@ window.LAB_DATA = {
     role: "Professor, Department of IoT, Soonchunhyang University",
     korean: "순천향대학교 사물인터넷학과 김대희",
     email: "daeheekim@sch.ac.kr",
-    office: "Engineering Building 9228",
-    phone: "+82-41-530-1743",
+    office: "SCH Media Lab 412",
+    phone: "+82-41-530-4957",
     bio: [
       "DAEHEE KIM received the B.S. degree in electrical and electronic engineering from Yonsei University, Seoul, Korea, in 2003, and the M.S. and Ph.D. degrees in electrical and electronic engineering from Korea University, Seoul, Korea, in 2006 and 2016, respectively. He is currently a Professor with the Department of Internet of Things, Soonchunhyang University, Asan, Korea. From 2006 to 2016, he was a Senior Engineer with Samsung Electronics, Suwon, Korea, where he conducted research on WiMAX, LTE and 5G systems.",
       "His research interest includes the Internet of Things, energy management, in-vehicle intrusion detection systems, reinforcement learning for V2X, blockchain, 6G and security for wireless networks.",
