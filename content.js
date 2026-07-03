@@ -31,7 +31,7 @@ window.LAB_DATA = {
     role: "Professor, Department of IoT, Soonchunhyang University",
     korean: "순천향대학교 사물인터넷학과 김대희",
     email: "daeheekim@sch.ac.kr",
-    office: "SCH Media Lab 412",
+    office: "SCH Media Labs 412",
     phone: "+82-41-530-4957",
     bio: [
       "DAEHEE KIM received the B.S. degree in electrical and electronic engineering from Yonsei University, Seoul, Korea, in 2003, and the M.S. and Ph.D. degrees in electrical and electronic engineering from Korea University, Seoul, Korea, in 2006 and 2016, respectively. He is currently a Professor with the Department of Internet of Things, Soonchunhyang University, Asan, Korea. From 2006 to 2016, he was a Senior Engineer with Samsung Electronics, Suwon, Korea, where he conducted research on WiMAX, LTE and 5G systems.",
@@ -84,22 +84,15 @@ window.LAB_DATA = {
         interests: "Energy Management, OPF, Optimization",
       },
       {
-        name: "Nguyen Thanh Minh Duy",
-        role: "Master Student",
-        email: "ntmduy@sch.ac.kr",
-        since: "2024~",
-        interests: "Security for V2X environments, , ML-based Intrusion Detection Systems",
-      },
-      {
         name: "Nguyen Khac Tien Dung",
-        role: "Master Student",
+        role: "Integrated Master/Ph.D. Student",
         email: "ngktdung@sch.ac.kr",
         since: "2024~",
         interests: "Power Systems",
       },
       {
         name: "Tran Trung Hieu",
-        role: "Master Student",
+        role: "Integrated Master/Ph.D. Student",
         email: "hieutt@sch.ac.kr",
         since: "2024~",
         interests: "Security for V2X environments/In-vehicle networks",
@@ -111,11 +104,25 @@ window.LAB_DATA = {
         since: "2025~",
         interests: "ML-based Security for In-vehicle networks",
       },
+      {
+        name: "Ha Phuong Thy",
+        role: "Integrated Master/Ph.D. Student",
+        email: "haphuongthy2003@sch.ac.kr",
+        since: "2026~",
+        interests: "Energy load forecasting",
+      },
+      {
+        name: "Le Thi Xuan Thu",
+        role: "Master Student",
+        email: "thulexuan@sch.ac.kr",
+        since: "2026~",
+        interests: "Energy load forecasting",
+      },
     ],
 
     undergraduateStudents: [
-      { name: "Seonghyun Kim", year: "2022" },
       { name: "Jeongwoo Kim", year: "2021" },
+      { name: "Dahyeok Jeong", year: "2021" },
       { name: "Joohyun Park", year: "2023" },
     ],
 
@@ -162,6 +169,12 @@ window.LAB_DATA = {
         year: "2025",
         current: "Ph.D. course in Eindhoven University of Technology",
       },
+      {
+        name: "Nguyen Thanh Minh Duy",
+        degree: "Master",
+        year: "2026",
+        current: "Finding a job in Vietnam",
+      },
     ],
 
     undergraduateAlumni: [
@@ -186,6 +199,7 @@ window.LAB_DATA = {
       "Soohyun Lee (2019)",
       "Insu Lee (2019)",
       "Seohyun Lim (2020)",
+      "Seonghyun Kim(2022)",
     ],
   },
 
