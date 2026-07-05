@@ -13,7 +13,7 @@ const journalNames = [
   "Engineering Applications of Artificial Intelligence",
   "Journal of Information and Communication Convergence Engineering",
   "KSII Transactions on Internet and Information Systems",
-  "Sustainable Energy, Grids and Networksnternational Journal of Energy Research",
+  "International Journal of Energy Research",
   "IEICE Transactions on Information and Systems",
   "Energy Conversion and Management",
   "Expert Systems with Applications",
