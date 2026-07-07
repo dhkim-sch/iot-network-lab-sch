@@ -227,7 +227,7 @@ window.LAB_DATA = {
       },
       {
         citation:
-          "C. Ahn, D. Kim*, S.Park, Can Domain Knowledge Make Deep Models Smarter? Expert-Guided PointPillar (EG-PointPillar) for Enhanced 3D Object Detection, Computers, Materials & Continua, February, 2026 (SCIE)",
+          "C. Ahn, D. Kim*, S. Park, Can Domain Knowledge Make Deep Models Smarter? Expert-Guided PointPillar (EG-PointPillar) for Enhanced 3D Object Detection, Computers, Materials & Continua, February, 2026 (SCIE)",
         url: "https://www.techscience.com/cmc/online/detail/25521",
       },
       {
@@ -527,7 +527,7 @@ window.LAB_DATA = {
       "김대희, Tien-Dat Le, \"타임 임베디드 트랜스포머와 오토인코더로 추출한 패킷 및 시퀀스 레벨의 특징을 활용한 차량용 다중분류 침입 탐지 시스템 및 방법\", 등록번호: 10-2896357 (2025년 12월 2일), 순천향대학교 산학협력단",
       "김대희, Ngyuen Trieu Phong, \"변분 오토인코더와 적대적 강화학습을 활용한 준지도 학습 기반의 차량 내 네트워크의 침입 탐지 방법 및 장치\", 등록번호: 제 10-2892101 (2025년 11월 24일), 순천향대학교 산학협력단",
       "김대희, Ngyuen Khac Tien Dung, \"복수의 에너지 캐리어를 통합적으로 운영하는 통합 에너지 허브의 운영을 최적화하기 위한 스케줄링 장치 및 스케줄링 방법\", 출원번호: 10-2025-0182912 (2025년 11월 26일), 순천향대학교 산학협력단",
-      "김대희, Phan Thanh Vinh, \"에너지 수요를 충족시키고 에너지 공급을 제어하기 위한 에 너지 제어 시스템 및 에너지 제어 방법\", 출원번호: 10-2025-01852911 (2025년 11월 26일), 순천향대학교 산학협력단",
+      "김대희, Phan Thanh Vinh, \"에너지 수요를 충족시키고 에너지 공급을 제어하기 위한 에너지 제어 시스템 및 에너지 제어 방법\", 출원번호: 10-2025-01852911 (2025년 11월 26일), 순천향대학교 산학협력단",
       "김대희, Ngyuen Trieu Phong, \"트랜스포머 기반 차량 내 침입 감지 및 공격 메시지 탐지 방법, 이를 수행하는 장치 및 컴퓨터 프로그램\", 등록번호: 10-2863932 (2025년 09월 19일), 순천향대학교 산학협력단",
       "김대희, Truong Hoang Bao Huy, \"분배 네트워크-에너지 커뮤니티 협력형 에너지 관리 시스템 및 이를 제어하는 방법\", 출원번호: 10-2025-0082150 (2025년 6월 20일), 순천향대학교 산학협력단",
       "김대희, 홍기영, 이창원, 김용희, 정소혜, \"사용자 맞춤형 손 운동 장치\", 등록번호: 10-2763633 (2025년 2월 3일), 순천향대학교 산학협력단",
