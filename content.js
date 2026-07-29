@@ -6,16 +6,8 @@ window.LAB_DATA = {
 
   announcements: [
     {
-      date: "2026.07",
-      text: "The lab website is being redesigned with content migrated from the legacy Google Site.",
-    },
-    {
       date: "Open",
       text: "Students interested in Energy IoT, V2X security, smart grid security, and AI-driven energy applications are welcome to contact Prof. Kim.",
-    },
-    {
-      date: "Update",
-      text: "Publications, patents, and member information are now managed from content.js.",
     },
   ],
 
@@ -521,6 +513,7 @@ window.LAB_DATA = {
     ],
 
     patents: [
+      "김대희, Hoang Thien Nu, \"준지도 학습 기반 컨볼루셔널 적대적 오토인코더를 활용한 차량 내 침입 탐지 방법\", 등록번호: 10-2991362 (2026년 7월 10일), 순천향대학교 산학협력단",
       "김대희, Pham Van Phu, \"통합 에너지 시스템의 다중 시간 척도 최적화를 위한 2단계 다층 최적화 프레임워크\", 등록번호: 10-2941474 (2026년 3월 16일), 순천향대학교 산학협력단",
       "김대희, Tien-Dat Le, \"차량 네트워크 침입을 탐지하기 위한 연합 학습 기반 보안 강화 솔루션\", 출원번호: 10-2026-0019364 (2026년 1월 30일), 순천향대학교 산학협력단",
       "김대희, Nguyen Thanh Minh Duy, \"다중 목적 그래프 신경망 기반의 차량 내부 네트워크 보안 솔루션\", 출원번호: 10-2026-0019363 (2026년 1월 30일), 순천향대학교 산학협력단",
