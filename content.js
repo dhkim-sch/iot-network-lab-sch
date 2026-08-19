@@ -11,13 +11,6 @@ window.LAB_DATA = {
     },
   ],
 
-  sourcePages: {
-    home: "https://sites.google.com/view/iot-network-lab-sch",
-    introduction: "https://sites.google.com/view/iot-network-lab-sch/introduction",
-    publications: "https://sites.google.com/view/iot-network-lab-sch/publications",
-    members: "https://sites.google.com/view/iot-network-lab-sch/members",
-  },
-
   professor: {
     name: "DAEHEE KIM",
     role: "Professor, Department of IoT, Soonchunhyang University",
