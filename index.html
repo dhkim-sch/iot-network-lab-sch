@@ -8,7 +8,7 @@
       content="IoT Network Lab website at Soonchunhyang University"
     />
     <title>IoT Network Lab | Soonchunhyang University</title>
-    <link rel="stylesheet" href="styles.css?v=20260819a" />
+    <link rel="stylesheet" href="styles.css?v=20260820a" />
   </head>
   <body>
     <header class="site-header">
@@ -44,10 +44,65 @@
           alt="IoT, smart energy, connected vehicle research visual"
         />
         <div class="hero-shade" aria-hidden="true"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-halo" aria-hidden="true"></div>
+        <svg
+          class="hero-network"
+          viewBox="0 0 900 620"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g class="hero-network-layer hero-network-layer-far">
+            <path
+              class="hero-network-path"
+              pathLength="1"
+              d="M56 124 222 48 386 148 584 66 786 176"
+            />
+            <path
+              class="hero-network-path"
+              pathLength="1"
+              d="M94 382 264 260 470 366 662 244 840 388"
+            />
+            <path class="hero-network-path" pathLength="1" d="M222 48 264 260M386 148 470 366M584 66 662 244" />
+            <circle class="hero-network-ring" cx="386" cy="148" r="76" />
+          </g>
+          <g class="hero-network-layer hero-network-layer-mid">
+            <path
+              class="hero-network-path hero-network-path-bright"
+              pathLength="1"
+              d="M142 222 320 116 508 234 714 132"
+            />
+            <path class="hero-network-path" pathLength="1" d="M320 116 358 446 574 514 714 132" />
+            <path class="hero-network-path" pathLength="1" d="M142 222 244 490 358 446" />
+            <circle class="hero-network-node" style="--node-delay: 80ms" cx="142" cy="222" r="7" />
+            <circle class="hero-network-node" style="--node-delay: 140ms" cx="320" cy="116" r="8" />
+            <circle class="hero-network-node" style="--node-delay: 200ms" cx="508" cy="234" r="10" />
+            <circle class="hero-network-node" style="--node-delay: 260ms" cx="714" cy="132" r="7" />
+            <circle class="hero-network-node" style="--node-delay: 320ms" cx="358" cy="446" r="7" />
+            <circle class="hero-network-node" style="--node-delay: 380ms" cx="574" cy="514" r="9" />
+          </g>
+          <g class="hero-network-layer hero-network-layer-near">
+            <path
+              class="hero-network-path hero-network-path-bright"
+              pathLength="1"
+              d="M476 74 638 316 808 236"
+            />
+            <path
+              class="hero-network-path hero-network-path-bright"
+              pathLength="1"
+              d="M638 316 776 524"
+            />
+            <circle class="hero-network-ring" cx="638" cy="316" r="104" />
+            <circle class="hero-network-node" style="--node-delay: 180ms" cx="476" cy="74" r="9" />
+            <circle class="hero-network-node" style="--node-delay: 260ms" cx="638" cy="316" r="13" />
+            <circle class="hero-network-node" style="--node-delay: 340ms" cx="808" cy="236" r="9" />
+            <circle class="hero-network-node" style="--node-delay: 420ms" cx="776" cy="524" r="10" />
+          </g>
+        </svg>
 
         <div class="hero-content">
           <p class="eyebrow">Department of Internet of Things</p>
-          <h1 id="hero-title">IoT Network Lab</h1>
+          <h1 id="hero-title">IoT Network <span>Lab</span></h1>
           <p class="hero-lead" id="hero-lead"></p>
           <div class="hero-actions">
             <a class="button primary" href="#research">Explore Research</a>
@@ -60,6 +115,11 @@
           <h2 id="notice-title">Announcements</h2>
           <ul class="notice-list" id="notice-list"></ul>
         </aside>
+
+        <div class="hero-scroll-cue" aria-hidden="true">
+          <span class="hero-scroll-line"></span>
+          <span>Scroll to explore</span>
+        </div>
       </section>
 
       <section class="quick-stats" aria-label="Lab highlights">
@@ -93,7 +153,7 @@
             <p class="korean-line" id="professor-korean"></p>
             <div id="professor-bio"></div>
           </div>
-          <div class="lab-profile" aria-label="Lab profile">
+          <div class="lab-profile" role="group" aria-label="Lab profile">
             <dl id="lab-profile-list"></dl>
           </div>
         </div>
@@ -125,7 +185,7 @@
           </a>
         </div>
 
-        <div class="publication-controls" aria-label="Publication filters">
+        <div class="publication-controls" role="group" aria-label="Publication filters">
           <div class="segment-control" role="group" aria-label="Publication type">
             <button class="segment-button active" type="button" data-pub-filter="all">All</button>
             <button class="segment-button" type="button" data-pub-filter="journals">Journals</button>
@@ -189,6 +249,7 @@
     </footer>
 
     <script src="content.js?v=20260703d"></script>
-    <script src="script.js?v=20260819a"></script>
+    <script src="script.js?v=20260820a"></script>
+    <script src="assets/motion.js?v=20260820a"></script>
   </body>
 </html>

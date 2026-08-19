@@ -165,7 +165,7 @@ Hero 외 영역의 전환 시간은 약 `180–520ms`, stagger는 `60–80ms`, �
 
 - Hero 내부에 장식용 grid, halo, 인라인 SVG 마크업을 추가한다.
 - 필요한 class와 `aria-hidden` 속성을 지정한다.
-- `motion.js`를 `script.js` 뒤에 로드한다.
+- `assets/motion.js`를 `script.js` 뒤에 로드한다.
 - CSS와 JavaScript cache query version을 갱신한다.
 
 ### `styles.css`
@@ -178,10 +178,10 @@ Hero 외 영역의 전환 시간은 약 `180–520ms`, stagger는 `60–80ms`, �
 ### `script.js`
 
 - 콘텐츠 렌더링, 내비게이션, publication 검색·필터만 담당한다.
-- 현재 포함된 reveal, count-up 및 motion 초기화 책임을 `motion.js`로 이동한다.
+- 현재 포함된 reveal, count-up 및 motion 초기화 책임을 `assets/motion.js`로 이동한다.
 - `content.js`를 사용하는 기존 렌더링 순서와 데이터 계산은 변경하지 않는다.
 
-### `motion.js`
+### `assets/motion.js`
 
 다음의 독립적인 controller를 제공한다.
 
@@ -190,13 +190,13 @@ Hero 외 영역의 전환 시간은 약 `180–520ms`, stagger는 `60–80ms`, �
 3. `hero parallax controller`: 포인터·스크롤 목표값, 단일 RAF 및 CSS 변수 관리
 4. `motion lifecycle`: viewport, visibility, media query 변화에 따른 시작·중지·정리
 
-전역으로 필요한 공개 진입점은 하나로 제한한다. `script.js` 렌더링이 완료된 뒤 로드된 `motion.js`가 현재 DOM을 확인하고 초기화한다.
+전역으로 필요한 공개 진입점은 하나로 제한한다. `script.js` 렌더링이 완료된 뒤 로드된 `assets/motion.js`가 현재 DOM을 확인하고 초기화한다. 모듈을 `assets/` 아래에 두어 기존 Pages workflow의 재귀적 자산 복사 규칙을 그대로 사용한다.
 
 ## 10. 데이터 흐름
 
 1. `content.js`가 기존 콘텐츠 배열을 제공한다.
 2. `script.js`가 notices, stats, research, publications, members, contact를 렌더링하고 기존 이벤트를 연결한다.
-3. 뒤이어 로드된 `motion.js`가 기능 지원, 입력 장치 및 Reduce Motion 설정을 확인한다.
+3. 뒤이어 로드된 `assets/motion.js`가 기능 지원, 입력 장치 및 Reduce Motion 설정을 확인한다.
 4. reveal controller가 초기 DOM 대상만 등록한다.
 5. hero controller가 Hero가 viewport에 있을 때만 pointer와 scroll 목표값을 수집한다.
 6. 단일 RAF가 보간값을 CSS 변수에 기록하고 CSS가 레이어 transform을 적용한다.
@@ -216,7 +216,7 @@ Hero 외 영역의 전환 시간은 약 `180–520ms`, stagger는 `60–80ms`, �
 ## 12. 성능 기준
 
 - 외부 라이브러리, CDN, Canvas 및 런타임 데이터 요청을 추가하지 않는다.
-- 새 네트워크 비용은 같은 origin의 정적 `motion.js` 파일 1개로 제한하며 SVG는 HTML에 인라인한다.
+- 새 네트워크 비용은 같은 origin의 정적 `assets/motion.js` 파일 1개로 제한하며 SVG는 HTML에 인라인한다.
 - 애니메이션은 `transform`과 `opacity`만 사용한다.
 - 포인터와 스크롤 입력은 하나의 RAF로 합친다.
 - Hero가 보이지 않을 때 이벤트 계산과 RAF를 중지한다.
@@ -264,7 +264,7 @@ Hero 외 영역의 전환 시간은 약 `180–520ms`, stagger는 `60–80ms`, �
 - `index.html`
 - `styles.css`
 - `script.js`
-- 새 `motion.js`
+- 새 `assets/motion.js`
 
 변경하지 않을 파일:
 
