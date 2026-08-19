@@ -127,7 +127,7 @@ const renderStats = () => {
 
   Object.entries(counts).forEach(([key, value]) => {
     const target = document.querySelector(`[data-count="${key}"]`);
-    if (target) target.textContent = key === "research" ? String(value) : `${value}+`;
+    if (target) target.textContent = String(value);
   });
 };
 
