@@ -5,6 +5,11 @@
   const COUNT_DURATION = 700;
   const HERO_EASING = 0.12;
   const HERO_SETTLE_THRESHOLD = 0.001;
+  const JOURNEY_STAGGER = 70;
+  const JOURNEY_MAX_DELAY = 280;
+  const JOURNEY_ACTIVE_LINE = 0.58;
+  const JOURNEY_PULSE_DURATION = 420;
+  const JOURNEY_IDS = ["about", "research", "publications", "members", "join", "contact"];
 
   const root = document.documentElement;
   const motionPreference =
@@ -15,6 +20,8 @@
     typeof window.matchMedia === "function"
       ? window.matchMedia("(min-width: 821px) and (hover: hover) and (pointer: fine)")
       : null;
+  const journeyDesktop =
+    typeof window.matchMedia === "function" ? window.matchMedia("(min-width: 821px)") : null;
 
   const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
 
@@ -39,27 +46,14 @@
     ]);
 
     addTarget(document.querySelector(".quick-stats"));
-    document.querySelectorAll(".section-heading").forEach((element) => addTarget(element));
-    addStaggered(document.querySelectorAll(".about-copy, .lab-profile"));
-    addStaggered(document.querySelectorAll(".research-card"));
-    addTarget(document.querySelector(".publication-controls"));
     addStaggered(document.querySelectorAll(".publication-section"));
-    addTarget(document.querySelector(".professor-card"));
 
     const currentMembersGrid = document.querySelector(".current-members-grid");
     const currentMembersGroup = currentMembersGrid?.parentElement;
-    if (currentMembersGrid && currentMembersGroup) {
-      addTarget(currentMembersGroup.querySelector("h3"));
-      addStaggered(currentMembersGrid.querySelectorAll(".person-card"));
-    }
-
     const otherMemberGroups = [...document.querySelectorAll(".member-group")].filter(
       (group) => group !== currentMembersGroup
     );
     addStaggered(otherMemberGroups);
-
-    addTarget(document.querySelector(".join-content"));
-    addStaggered(document.querySelectorAll(".contact-block"));
 
     return targets;
   };
@@ -210,6 +204,633 @@
       destroy();
       return { destroy };
     }
+  };
+
+  const createJourneyController = ({ reduced = false } = {}) => {
+    const main = document.querySelector("main#home");
+    const checkpointElements = new Map(
+      JOURNEY_IDS.map((id) => [id, document.querySelector(`[data-journey-checkpoint="${id}"]`)])
+    );
+    const nodeElements = new Map(
+      JOURNEY_IDS.map((id) => [id, document.querySelector(`[data-journey-node="${id}"]`)])
+    );
+    const segmentDefinitions = [
+      { name: "primary", ids: ["about", "research", "publications"] },
+      { name: "secondary", ids: ["members", "join", "contact"] },
+    ].map((definition) => {
+      const element = document.querySelector(`[data-journey-segment="${definition.name}"]`);
+      return {
+        ...definition,
+        element,
+        track: element?.querySelector(".journey-track"),
+        progress: element?.querySelector(".journey-progress"),
+        startDocumentY: 0,
+        endDocumentY: 0,
+        valid: false,
+      };
+    });
+
+    if (!main) return { reduce() {}, destroy() {} };
+
+    const getGroupContent = (id, section) => {
+      if (!section) return [];
+
+      if (id === "about") {
+        return [section.querySelector(".about-copy"), section.querySelector(".lab-profile")];
+      }
+
+      if (id === "research") return [...section.querySelectorAll(".research-card")];
+      if (id === "publications") return [section.querySelector(".publication-controls")];
+
+      if (id === "members") {
+        const currentMembersGrid = section.querySelector(".current-members-grid");
+        const currentMembersGroup = currentMembersGrid?.parentElement;
+        return [
+          section.querySelector(".professor-card"),
+          currentMembersGroup?.querySelector("h3"),
+          ...(currentMembersGrid ? [...currentMembersGrid.querySelectorAll(".person-card")] : []),
+        ];
+      }
+
+      if (id === "contact") return [...section.querySelectorAll(".contact-block")];
+      return [];
+    };
+
+    const groups = JOURNEY_IDS.map((id) => {
+      const checkpoint = checkpointElements.get(id);
+      const section = checkpoint?.closest("section");
+      if (!checkpoint || !section) return null;
+      const side = checkpoint.dataset.journeySide === "right" ? "right" : "left";
+      const content = getGroupContent(id, section).filter(Boolean);
+      let contentIndex = 0;
+      const targets = [checkpoint, ...content].map((element, index) => {
+        if (index === 0) return { element, type: "title", delay: 0 };
+
+        const directionOffset = side === "right" ? 1 : 0;
+        const direction = (contentIndex + directionOffset) % 2 === 0 ? "left" : "right";
+        contentIndex += 1;
+        return {
+          element,
+          type: direction,
+          delay: Math.min(contentIndex * JOURNEY_STAGGER, JOURNEY_MAX_DELAY),
+        };
+      });
+
+      return { id, checkpoint, section, targets, revealed: false };
+    }).filter(Boolean);
+
+    if (!groups.length) return { reduce() {}, destroy() {} };
+
+    const entryElement =
+      document.querySelector("[data-journey-entry] .hero-scroll-line") ||
+      document.querySelector("[data-journey-entry]");
+    segmentDefinitions.forEach((segment) => {
+      segment.valid = Boolean(
+        segment.element &&
+          segment.track &&
+          segment.progress &&
+          (segment.name !== "primary" || entryElement) &&
+          segment.ids.every((id) => {
+            const node = nodeElements.get(id);
+            return (
+              checkpointElements.get(id) &&
+              node &&
+              segment.element.contains(node) &&
+              groups.some((group) => group.id === id)
+            );
+          })
+      );
+    });
+
+    let revealObserver;
+    const revealCleanupTimers = new Map();
+    const pulseTimers = new Map();
+    const intersectionSupported = typeof window.IntersectionObserver === "function";
+
+    const resetRevealTarget = (element) => {
+      element.classList.remove(
+        "journey-reveal",
+        "journey-visible",
+        "journey-title",
+        "journey-from-left",
+        "journey-from-right"
+      );
+      element.style.removeProperty("--journey-delay");
+    };
+
+    const cleanupRevealTarget = (element) => {
+      const timer = revealCleanupTimers.get(element);
+      if (timer !== undefined) window.clearTimeout(timer);
+      revealCleanupTimers.delete(element);
+      resetRevealTarget(element);
+    };
+
+    const pulseNode = (id) => {
+      const node = nodeElements.get(id);
+      if (!node || pulseTimers.has(node)) return;
+
+      node.classList.add("is-pulsing");
+      const timer = window.setTimeout(() => {
+        node.classList.remove("is-pulsing");
+        pulseTimers.delete(node);
+      }, JOURNEY_PULSE_DURATION);
+      pulseTimers.set(node, timer);
+    };
+
+    const revealGroup = (group) => {
+      if (group.revealed) return;
+      group.revealed = true;
+      group.checkpoint.classList.remove("journey-checkpoint-pending");
+      group.checkpoint.classList.add("journey-checkpoint-visible");
+      pulseNode(group.id);
+
+      group.targets.forEach(({ element, delay }) => {
+        element.classList.add("journey-visible");
+        const timer = window.setTimeout(
+          () => cleanupRevealTarget(element),
+          MOTION_DURATION + delay + 140
+        );
+        revealCleanupTimers.set(element, timer);
+      });
+    };
+
+    const finishReveals = () => {
+      revealObserver?.disconnect();
+      revealObserver = undefined;
+      [...revealCleanupTimers.keys()].forEach((element) => cleanupRevealTarget(element));
+      groups.forEach((group) => {
+        group.checkpoint.classList.remove(
+          "journey-checkpoint-pending",
+          "journey-checkpoint-visible"
+        );
+        group.targets.forEach(({ element }) => resetRevealTarget(element));
+      });
+      pulseTimers.forEach((timer, node) => {
+        window.clearTimeout(timer);
+        node.classList.remove("is-pulsing");
+      });
+      pulseTimers.clear();
+    };
+
+    const setupReveals = () => {
+      if (reduced || !intersectionSupported) return;
+
+      try {
+        revealObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const group = groups.find(({ checkpoint }) => checkpoint === entry.target);
+              if (!group) return;
+              revealObserver.unobserve(entry.target);
+              revealGroup(group);
+            });
+          },
+          { rootMargin: "0px 0px -8% 0px", threshold: 0.06 }
+        );
+
+        groups.forEach((group) => {
+          if (group.checkpoint.getBoundingClientRect().bottom <= 0) {
+            group.revealed = true;
+            group.checkpoint.classList.add("journey-checkpoint-visible");
+            return;
+          }
+
+          group.checkpoint.classList.add("journey-checkpoint-pending");
+          group.targets.forEach(({ element, type, delay }) => {
+            element.classList.add("journey-reveal");
+            element.classList.add(type === "title" ? "journey-title" : `journey-from-${type}`);
+            element.style.setProperty("--journey-delay", `${delay}ms`);
+          });
+          revealObserver.observe(group.checkpoint);
+        });
+      } catch {
+        finishReveals();
+      }
+    };
+
+    setupReveals();
+
+    const pathSupported =
+      typeof window.ResizeObserver === "function" &&
+      Boolean(journeyDesktop) &&
+      segmentDefinitions.some(({ valid }) => valid);
+    let geometry;
+    let geometryDirty = true;
+    let pathActive = false;
+    let animationFrame;
+    let resizeObserver;
+    let preferenceReduced = reduced;
+
+    const pageScrollY = () => window.scrollY || window.pageYOffset || 0;
+    const formatCoordinate = (value) => Number(value.toFixed(2));
+
+    const resetSegment = ({ element, track, progress, ids }) => {
+      if (element) {
+        element.classList.remove("journey-ready", "journey-static");
+        element.style.removeProperty("top");
+        element.style.removeProperty("height");
+        element.setAttribute("viewBox", "0 0 1 1");
+      }
+      track?.setAttribute("d", "M0 0");
+      if (progress) {
+        progress.setAttribute("d", "M0 0");
+        progress.style.strokeDashoffset = "1";
+      }
+      ids.forEach((id) => {
+        const node = nodeElements.get(id);
+        if (node) {
+          node.removeAttribute("transform");
+          node.classList.remove("is-active", "is-complete", "is-pending");
+        }
+      });
+    };
+
+    const hideSegments = () => {
+      segmentDefinitions.forEach((segment) => resetSegment(segment));
+      geometry = undefined;
+    };
+
+    const buildRoute = (start, nodes, segmentTop, segmentEnd) => {
+      const parts = [
+        `M ${formatCoordinate(start.x)} ${formatCoordinate(start.y - segmentTop)}`,
+      ];
+      let current = start;
+
+      nodes.forEach((target) => {
+        const preferredApproach = Math.max(current.y + 28, target.sectionTop + 28);
+        const approachY = Math.max(current.y, Math.min(preferredApproach, target.y - 20));
+
+        if (approachY > current.y + 1) {
+          parts.push(`L ${formatCoordinate(current.x)} ${formatCoordinate(approachY - segmentTop)}`);
+        }
+
+        const verticalSpan = Math.max(target.y - approachY, 1);
+        const controlOneY = approachY + verticalSpan * 0.32;
+        const controlTwoY = approachY + verticalSpan * 0.72;
+        parts.push(
+          `C ${formatCoordinate(current.x)} ${formatCoordinate(controlOneY - segmentTop)} ` +
+            `${formatCoordinate(target.x)} ${formatCoordinate(controlTwoY - segmentTop)} ` +
+            `${formatCoordinate(target.x)} ${formatCoordinate(target.y - segmentTop)}`
+        );
+        current = target;
+      });
+
+      if (segmentEnd > current.y + 1) {
+        parts.push(`L ${formatCoordinate(current.x)} ${formatCoordinate(segmentEnd - segmentTop)}`);
+      }
+
+      return parts.join(" ");
+    };
+
+    const configureSegment = (
+      segment,
+      { width, top, end, path, points, mainDocumentTop, isStatic }
+    ) => {
+      const height = Math.max(end - top, 1);
+      segment.element.style.top = `${formatCoordinate(top)}px`;
+      segment.element.style.height = `${formatCoordinate(height)}px`;
+      segment.element.setAttribute(
+        "viewBox",
+        `0 0 ${formatCoordinate(width)} ${formatCoordinate(height)}`
+      );
+      segment.track.setAttribute("d", path);
+      segment.progress.setAttribute("d", path);
+      segment.progress.style.strokeDashoffset = isStatic ? "0" : "1";
+      segment.startDocumentY = mainDocumentTop + top;
+      segment.endDocumentY = mainDocumentTop + end;
+
+      points.forEach((point) => {
+        nodeElements
+          .get(point.id)
+          .setAttribute(
+            "transform",
+            `translate(${formatCoordinate(point.x)} ${formatCoordinate(point.y - top)})`
+          );
+      });
+
+      segment.element.classList.toggle("journey-static", isStatic);
+      segment.element.classList.toggle("journey-ready", !isStatic);
+    };
+
+    const calculateGeometry = (isStatic = false) => {
+      const scrollY = pageScrollY();
+      const mainBounds = main.getBoundingClientRect();
+      const mainDocumentTop = mainBounds.top + scrollY;
+      const mainDocumentLeft = mainBounds.left + (window.scrollX || window.pageXOffset || 0);
+      const width = Math.max(mainBounds.width, 1);
+      const mainHeight = Math.max(main.scrollHeight, mainBounds.height, 1);
+      const gutter = clamp(width * 0.024, 22, 34);
+      const sideX = { left: gutter, right: width - gutter };
+
+      const points = groups.map((group) => {
+        const kicker = group.checkpoint.querySelector(".section-kicker") || group.checkpoint;
+        const kickerBounds = kicker.getBoundingClientRect();
+        const sectionBounds = group.section.getBoundingClientRect();
+        const side = group.checkpoint.dataset.journeySide === "right" ? "right" : "left";
+        return {
+          id: group.id,
+          x: sideX[side],
+          y: kickerBounds.top + scrollY - mainDocumentTop + kickerBounds.height / 2,
+          sectionTop: sectionBounds.top + scrollY - mainDocumentTop,
+        };
+      });
+      const pointById = new Map(points.map((point) => [point.id, point]));
+      const configuredSegments = [];
+      segmentDefinitions.filter(({ valid }) => !valid).forEach((segment) => resetSegment(segment));
+
+      const primarySegment = segmentDefinitions[0];
+      if (primarySegment.valid) {
+        const entryBounds = entryElement.getBoundingClientRect();
+        const entryPoint = {
+          x: clamp(
+            entryBounds.left + (window.scrollX || window.pageXOffset || 0) - mainDocumentLeft +
+              entryBounds.width / 2,
+            width * 0.25,
+            width * 0.75
+          ),
+          y: entryBounds.top + scrollY - mainDocumentTop + entryBounds.height / 2,
+        };
+        const controlsBounds = document
+          .querySelector(".publication-controls")
+          ?.getBoundingClientRect();
+        const publicationListBounds = document
+          .querySelector("#publication-list")
+          ?.getBoundingClientRect();
+        const primaryPoints = primarySegment.ids.map((id) => pointById.get(id));
+        const publicationsPoint = pointById.get("publications");
+        const primaryTop = Math.max(entryPoint.y, 0);
+        const controlsTail = controlsBounds
+          ? controlsBounds.bottom + scrollY - mainDocumentTop + 34
+          : publicationsPoint.y + 76;
+        const listBoundary = publicationListBounds
+          ? publicationListBounds.top + scrollY - mainDocumentTop - 10
+          : controlsTail;
+        const primaryEnd = Math.min(
+          mainHeight,
+          Math.max(Math.min(controlsTail, listBoundary), publicationsPoint.y + 76)
+        );
+
+        configureSegment(primarySegment, {
+          width,
+          top: primaryTop,
+          end: primaryEnd,
+          path: buildRoute(entryPoint, primaryPoints, primaryTop, primaryEnd),
+          points: primaryPoints,
+          mainDocumentTop,
+          isStatic,
+        });
+        configuredSegments.push(primarySegment);
+      }
+
+      const secondarySegment = segmentDefinitions[1];
+      if (secondarySegment.valid) {
+        const secondaryPoints = secondarySegment.ids.map((id) => pointById.get(id));
+        const membersPoint = pointById.get("members");
+        const contactPoint = pointById.get("contact");
+        const contactBounds = document.querySelector(".contact-grid")?.getBoundingClientRect();
+        const secondaryTop = Math.max(membersPoint.sectionTop + 18, 0);
+        const secondaryStart = { x: sideX.right, y: secondaryTop };
+        const secondaryEnd = Math.min(
+          mainHeight,
+          Math.max(
+            contactBounds ? contactBounds.bottom + scrollY - mainDocumentTop + 36 : 0,
+            contactPoint.y + 90
+          )
+        );
+
+        configureSegment(secondarySegment, {
+          width,
+          top: secondaryTop,
+          end: secondaryEnd,
+          path: buildRoute(secondaryStart, secondaryPoints, secondaryTop, secondaryEnd),
+          points: secondaryPoints,
+          mainDocumentTop,
+          isStatic,
+        });
+        configuredSegments.push(secondarySegment);
+      }
+
+      const configuredIds = new Set(configuredSegments.flatMap(({ ids }) => ids));
+      const checkpointPositions = points
+        .filter(({ id }) => configuredIds.has(id))
+        .map((point) => ({
+          ...point,
+          documentY: mainDocumentTop + point.y,
+          node: nodeElements.get(point.id),
+        }));
+
+      if (isStatic || !intersectionSupported) {
+        checkpointPositions.forEach(({ node }) => {
+          node.classList.remove("is-active", "is-pending");
+          node.classList.add("is-complete");
+        });
+      }
+
+      geometry = { segments: configuredSegments, checkpoints: checkpointPositions };
+      geometryDirty = false;
+    };
+
+    const updateProgress = () => {
+      if (!geometry) return;
+      const activationY = pageScrollY() + window.innerHeight * JOURNEY_ACTIVE_LINE;
+
+      geometry.segments.forEach((segment) => {
+        const progress = clamp(
+          (activationY - segment.startDocumentY) /
+            Math.max(segment.endDocumentY - segment.startDocumentY, 1),
+          0,
+          1
+        );
+        segment.progress.style.strokeDashoffset = (1 - progress).toFixed(4);
+      });
+
+      if (!intersectionSupported) return;
+
+      const nearest = geometry.checkpoints.reduce((closest, checkpoint) => {
+        const distance = Math.abs(checkpoint.documentY - activationY);
+        return !closest || distance < closest.distance ? { checkpoint, distance } : closest;
+      }, null);
+      const activeId =
+        nearest && nearest.distance <= Math.max(120, window.innerHeight * 0.28)
+          ? nearest.checkpoint.id
+          : null;
+
+      geometry.checkpoints.forEach(({ id, documentY, node }) => {
+        const isActive = id === activeId;
+        node.classList.toggle("is-active", isActive);
+        node.classList.toggle("is-complete", !isActive && documentY < activationY);
+        node.classList.toggle("is-pending", !isActive && documentY >= activationY);
+      });
+    };
+
+    const routeIsNearViewport = () => {
+      if (!geometry) return true;
+      const scrollY = pageScrollY();
+      const viewport = Math.max(window.innerHeight, 1);
+      const nearTop = scrollY - viewport;
+      const nearBottom = scrollY + viewport * 2;
+      return geometry.segments.some(
+        (segment) => segment.endDocumentY >= nearTop && segment.startDocumentY <= nearBottom
+      );
+    };
+
+    const stopFrame = () => {
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
+    };
+
+    const runFrame = () => {
+      animationFrame = undefined;
+      if (!pathActive || document.hidden) return;
+
+      try {
+        if (geometryDirty || !geometry) calculateGeometry(false);
+        updateProgress();
+      } catch {
+        deactivatePath();
+      }
+    };
+
+    const scheduleFrame = (force = false) => {
+      if (
+        animationFrame === undefined &&
+        pathActive &&
+        !document.hidden &&
+        (force || geometryDirty || routeIsNearViewport())
+      ) {
+        animationFrame = requestAnimationFrame(runFrame);
+      }
+    };
+
+    const markGeometryDirty = () => {
+      geometryDirty = true;
+      scheduleFrame(true);
+    };
+
+    const handleScroll = () => {
+      if (geometry && !routeIsNearViewport()) {
+        stopFrame();
+        return;
+      }
+      scheduleFrame();
+    };
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopFrame();
+      } else {
+        scheduleFrame(true);
+      }
+    };
+
+    const stopPathTracking = () => {
+      if (!pathActive && !resizeObserver && animationFrame === undefined) return;
+      pathActive = false;
+      stopFrame();
+      resizeObserver?.disconnect();
+      resizeObserver = undefined;
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", markGeometryDirty);
+      window.removeEventListener("load", markGeometryDirty);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+
+    const deactivatePath = (hide = true) => {
+      stopPathTracking();
+      if (hide) hideSegments();
+    };
+
+    const activatePath = () => {
+      if (pathActive || !pathSupported || !journeyDesktop.matches || preferenceReduced) return;
+
+      try {
+        resizeObserver = new ResizeObserver(markGeometryDirty);
+        const observedElements = new Set([
+          main,
+          document.querySelector("#publication-list"),
+          ...groups.map(({ section }) => section),
+        ]);
+        observedElements.forEach((element) => {
+          if (element) resizeObserver.observe(element);
+        });
+      } catch {
+        resizeObserver?.disconnect();
+        resizeObserver = undefined;
+        hideSegments();
+        return;
+      }
+
+      pathActive = true;
+      geometryDirty = true;
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      window.addEventListener("resize", markGeometryDirty, { passive: true });
+      if (document.readyState !== "complete") window.addEventListener("load", markGeometryDirty);
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+      scheduleFrame(true);
+    };
+
+    const handleDesktopChange = (event) => {
+      if (event.matches) {
+        activatePath();
+      } else {
+        deactivatePath();
+      }
+    };
+
+    const addDesktopListener = () => {
+      if (!pathSupported) return;
+      if (typeof journeyDesktop.addEventListener === "function") {
+        journeyDesktop.addEventListener("change", handleDesktopChange);
+      } else if (typeof journeyDesktop.addListener === "function") {
+        journeyDesktop.addListener(handleDesktopChange);
+      }
+    };
+
+    const removeDesktopListener = () => {
+      if (!pathSupported) return;
+      if (typeof journeyDesktop.removeEventListener === "function") {
+        journeyDesktop.removeEventListener("change", handleDesktopChange);
+      } else if (typeof journeyDesktop.removeListener === "function") {
+        journeyDesktop.removeListener(handleDesktopChange);
+      }
+    };
+
+    const showStaticPath = () => {
+      if (!pathSupported || !journeyDesktop.matches) {
+        hideSegments();
+        return;
+      }
+
+      try {
+        calculateGeometry(true);
+      } catch {
+        hideSegments();
+      }
+    };
+
+    const reduce = () => {
+      if (preferenceReduced) return;
+      preferenceReduced = true;
+      finishReveals();
+      removeDesktopListener();
+      deactivatePath(false);
+      showStaticPath();
+    };
+
+    const destroy = () => {
+      finishReveals();
+      removeDesktopListener();
+      deactivatePath();
+    };
+
+    if (reduced) {
+      showStaticPath();
+    } else {
+      addDesktopListener();
+      activatePath();
+    }
+
+    return { reduce, destroy };
   };
 
   const createHeroController = () => {
@@ -370,14 +991,17 @@
   };
 
   const initHomepageMotion = () => {
-    if (motionPreference?.matches) return;
-
-    const countController = createCountController();
-    const revealController = createRevealController(countController);
-    const heroController = createHeroController();
-    let disabled = false;
+    if (motionPreference?.matches) {
+      createJourneyController({ reduced: true });
+      return;
+    }
 
     root.classList.add("motion-enabled");
+    const countController = createCountController();
+    const revealController = createRevealController(countController);
+    const journeyController = createJourneyController();
+    const heroController = createHeroController();
+    let disabled = false;
 
     const removePreferenceListener = () => {
       if (!motionPreference) return;
@@ -392,6 +1016,7 @@
       if (disabled) return;
       disabled = true;
       revealController.destroy();
+      journeyController.reduce();
       heroController.destroy();
       root.classList.remove("motion-enabled");
       removePreferenceListener();
@@ -414,6 +1039,9 @@
     initHomepageMotion();
   } catch {
     root.classList.remove("motion-enabled");
+    document.querySelectorAll(".journey-network").forEach((element) => {
+      element.classList.remove("journey-ready", "journey-static");
+    });
     document.querySelectorAll("[data-count]").forEach((element) => {
       if (!element.textContent.trim()) element.textContent = "0";
     });
