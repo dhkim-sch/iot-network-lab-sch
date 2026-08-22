@@ -8,7 +8,7 @@
       content="IoT Network Lab website at Soonchunhyang University"
     />
     <title>IoT Network Lab | Soonchunhyang University</title>
-    <link rel="stylesheet" href="styles.css?v=20260821a" />
+    <link rel="stylesheet" href="styles.css?v=20260822a" />
   </head>
   <body>
     <header class="site-header">
@@ -37,6 +37,38 @@
     </header>
 
     <main id="home">
+      <div class="scene-ambient" data-scene-ambient aria-hidden="true">
+        <span class="scene-ambient-glow"></span>
+        <span class="scene-ambient-grid"></span>
+        <svg
+          class="scene-ambient-network"
+          viewBox="0 0 960 540"
+          preserveAspectRatio="xMidYMid slice"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g class="scene-ambient-links">
+            <path d="M54 338 218 178 392 274 558 116 742 232 908 92" />
+            <path d="M92 448 286 388 454 468 642 340 874 430" />
+            <path d="M218 178 286 388M392 274 454 468M558 116 642 340M742 232 874 430" />
+            <path d="M392 274 642 340M558 116 742 232" />
+          </g>
+          <g class="scene-ambient-nodes">
+            <circle cx="54" cy="338" r="5" />
+            <circle cx="218" cy="178" r="7" />
+            <circle cx="286" cy="388" r="5" />
+            <circle cx="392" cy="274" r="8" />
+            <circle cx="454" cy="468" r="5" />
+            <circle cx="558" cy="116" r="6" />
+            <circle cx="642" cy="340" r="9" />
+            <circle cx="742" cy="232" r="6" />
+            <circle cx="874" cy="430" r="5" />
+            <circle cx="908" cy="92" r="5" />
+          </g>
+          <circle class="scene-ambient-orbit" cx="642" cy="340" r="94" />
+        </svg>
+      </div>
+
       <svg
         class="journey-network journey-network-primary"
         data-journey-segment="primary"
@@ -317,6 +349,6 @@
 
     <script src="content.js?v=20260820a"></script>
     <script src="script.js?v=20260820a"></script>
-    <script src="assets/motion.js?v=20260821a"></script>
+    <script src="assets/motion.js?v=20260822a"></script>
   </body>
 </html>

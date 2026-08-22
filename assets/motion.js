@@ -9,6 +9,8 @@
   const JOURNEY_MAX_DELAY = 280;
   const JOURNEY_ACTIVE_LINE = 0.58;
   const JOURNEY_PULSE_DURATION = 420;
+  const SCENE_ALIGN_DURATION = 160;
+  const CARD_RESET_DURATION = 220;
   const JOURNEY_IDS = ["about", "research", "publications", "members", "join", "contact"];
 
   const root = document.documentElement;
@@ -24,6 +26,27 @@
     typeof window.matchMedia === "function" ? window.matchMedia("(min-width: 821px)") : null;
 
   const clamp = (value, minimum, maximum) => Math.min(Math.max(value, minimum), maximum);
+  const resolveActiveCheckpoint = (checkpoints, activationY) => {
+    if (!checkpoints.length) return null;
+
+    const lastCheckpoint = checkpoints[checkpoints.length - 1];
+    if (activationY >= lastCheckpoint.documentY) return lastCheckpoint.id;
+
+    const nearest = checkpoints.reduce((closest, checkpoint) => {
+      const distance = Math.abs(checkpoint.documentY - activationY);
+      return !closest || distance < closest.distance ? { checkpoint, distance } : closest;
+    }, null);
+    const maximumDistance = Math.max(120, window.innerHeight * 0.28);
+    return nearest && nearest.distance <= maximumDistance ? nearest.checkpoint.id : null;
+  };
+  const safelyNotify = (callback, value) => {
+    if (typeof callback !== "function") return;
+    try {
+      callback(value);
+    } catch {
+      // Optional enhancement callbacks must not affect the owning controller.
+    }
+  };
 
   const collectMotionTargets = () => {
     const targets = new Map();
@@ -206,7 +229,584 @@
     }
   };
 
-  const createJourneyController = ({ reduced = false } = {}) => {
+  const createSceneController = ({ reduced = false } = {}) => {
+    const main = document.querySelector("main#home");
+    const ambient = document.querySelector("[data-scene-ambient]");
+    const emptyController = {
+      setActive() {},
+      setGeometry() {},
+      destroy() {},
+    };
+
+    if (reduced || !main || !ambient || !journeyDesktop) return emptyController;
+
+    const groups = JOURNEY_IDS.map((id) => {
+      const checkpoint = document.querySelector(
+        '[data-journey-checkpoint="' + id + '"]'
+      );
+      const section = checkpoint?.closest("section");
+      return checkpoint && section ? { id, checkpoint, section } : null;
+    }).filter(Boolean);
+
+    if (!groups.length) return emptyController;
+
+    let geometry;
+    let activeId = null;
+    let renderedId = null;
+    let initialized = false;
+    let destroyed = false;
+    let transitionFrame;
+    let alignTimer;
+    let fallbackFrame;
+    let fallbackResizeObserver;
+    let fallbackActive = false;
+    let fallbackGeometryDirty = true;
+
+    const pageScrollY = () => window.scrollY || window.pageYOffset || 0;
+    const formatCoordinate = (value) => Number(value.toFixed(2)) + "px";
+
+    const clearTransitionFrame = () => {
+      if (transitionFrame !== undefined) cancelAnimationFrame(transitionFrame);
+      transitionFrame = undefined;
+    };
+
+    const clearAlignTimer = () => {
+      if (alignTimer !== undefined) window.clearTimeout(alignTimer);
+      alignTimer = undefined;
+      ambient.classList.remove("scene-aligning");
+    };
+
+    const hideScene = () => {
+      clearTransitionFrame();
+      clearAlignTimer();
+      ambient.classList.remove("scene-ready");
+      main.removeAttribute("data-active-scene");
+      renderedId = null;
+    };
+
+    const writeScene = () => {
+      if (destroyed || !activeId || !geometry) {
+        hideScene();
+        return;
+      }
+
+      const checkpoint = geometry.checkpoints.find(({ id }) => id === activeId);
+      if (!checkpoint) {
+        hideScene();
+        return;
+      }
+
+      const top = Math.max(checkpoint.sceneTop, 0);
+      const height = Math.max(checkpoint.sceneEnd - top, 160);
+      const sameScene = renderedId === activeId;
+      const placeBeforeReveal = !initialized || renderedId === null;
+
+      clearAlignTimer();
+      if (initialized && sameScene) {
+        ambient.classList.add("scene-aligning");
+        alignTimer = window.setTimeout(() => {
+          ambient.classList.remove("scene-aligning");
+          alignTimer = undefined;
+        }, SCENE_ALIGN_DURATION + 40);
+      }
+
+      if (placeBeforeReveal) {
+        clearTransitionFrame();
+        ambient.classList.remove("scene-ready", "scene-animated");
+      }
+
+      ambient.style.setProperty("--scene-top", formatCoordinate(top));
+      ambient.style.setProperty("--scene-height", formatCoordinate(height));
+      main.dataset.activeScene = activeId;
+      renderedId = activeId;
+
+      if (placeBeforeReveal) {
+        initialized = true;
+        transitionFrame = requestAnimationFrame(() => {
+          ambient.classList.add("scene-animated");
+          transitionFrame = requestAnimationFrame(() => {
+            ambient.classList.add("scene-ready");
+            transitionFrame = undefined;
+          });
+        });
+      } else {
+        ambient.classList.add("scene-ready");
+      }
+    };
+
+    const applyGeometry = (nextGeometry) => {
+      if (
+        !nextGeometry ||
+        !Array.isArray(nextGeometry.checkpoints) ||
+        !nextGeometry.checkpoints.length
+      ) {
+        geometry = undefined;
+        hideScene();
+        return;
+      }
+
+      geometry = nextGeometry;
+      if (activeId) writeScene();
+    };
+
+    const applyActive = (nextId) => {
+      const validId = JOURNEY_IDS.includes(nextId) ? nextId : null;
+      if (validId === activeId) return;
+      activeId = validId;
+      writeScene();
+    };
+
+    const measureFallbackGeometry = () => {
+      const scrollY = pageScrollY();
+      const mainBounds = main.getBoundingClientRect();
+      const mainDocumentTop = mainBounds.top + scrollY;
+      const mainHeight = Math.max(main.scrollHeight, mainBounds.height, 1);
+      const publicationControls = document.querySelector(".publication-controls");
+      const publicationControlsBounds = publicationControls?.getBoundingClientRect();
+      const publicationListBounds = document
+        .querySelector("#publication-list")
+        ?.getBoundingClientRect();
+      const membersSection = document.querySelector("#members");
+      const professorBounds = membersSection
+        ?.querySelector(".professor-card")
+        ?.getBoundingClientRect();
+      const currentMembersGrid = membersSection?.querySelector(".current-members-grid");
+      const currentMembersGroup = currentMembersGrid?.closest(".member-group");
+      const currentMembersBounds = currentMembersGroup?.getBoundingClientRect();
+
+      const checkpoints = groups.map(({ id, checkpoint, section }) => {
+        const kicker = checkpoint.querySelector(".section-kicker") || checkpoint;
+        const kickerBounds = kicker.getBoundingClientRect();
+        const sectionBounds = section.getBoundingClientRect();
+        const sceneTop = sectionBounds.top + scrollY - mainDocumentTop;
+        const sectionEnd = sectionBounds.bottom + scrollY - mainDocumentTop;
+        let sceneEnd = sectionEnd;
+
+        if (id === "publications" && publicationControlsBounds) {
+          sceneEnd = Math.min(
+            sectionEnd,
+            publicationControlsBounds.bottom + scrollY - mainDocumentTop + 36,
+            publicationListBounds
+              ? publicationListBounds.top + scrollY - mainDocumentTop - 10
+              : sectionEnd
+          );
+        }
+
+        if (id === "members") {
+          const memberContentEnd = Math.max(
+            professorBounds ? professorBounds.bottom + scrollY - mainDocumentTop : sceneTop,
+            currentMembersBounds
+              ? currentMembersBounds.bottom + scrollY - mainDocumentTop
+              : sceneTop
+          );
+          sceneEnd = Math.min(sectionEnd, memberContentEnd + 36);
+        }
+
+        return {
+          id,
+          documentY: kickerBounds.top + scrollY + kickerBounds.height / 2,
+          sceneTop,
+          sceneEnd: clamp(Math.max(sceneEnd, sceneTop + 160), sceneTop + 160, mainHeight),
+          side: checkpoint.dataset.journeySide === "right" ? "right" : "left",
+        };
+      });
+
+      return { mainDocumentTop, mainHeight, checkpoints };
+    };
+
+    const stopFallbackFrame = () => {
+      if (fallbackFrame !== undefined) cancelAnimationFrame(fallbackFrame);
+      fallbackFrame = undefined;
+    };
+
+    const runFallbackFrame = () => {
+      fallbackFrame = undefined;
+      if (!fallbackActive || document.hidden) return;
+
+      try {
+        const geometryChanged = fallbackGeometryDirty || !geometry;
+        if (geometryChanged) {
+          geometry = measureFallbackGeometry();
+          fallbackGeometryDirty = false;
+        }
+
+        const activationY = pageScrollY() + window.innerHeight * JOURNEY_ACTIVE_LINE;
+        const nextId = resolveActiveCheckpoint(geometry.checkpoints, activationY);
+        const sceneChanged = nextId !== activeId;
+        activeId = nextId;
+
+        if (sceneChanged || geometryChanged) writeScene();
+      } catch {
+        stopFallback();
+        hideScene();
+      }
+    };
+
+    const scheduleFallbackFrame = () => {
+      if (fallbackFrame === undefined && fallbackActive && !document.hidden) {
+        fallbackFrame = requestAnimationFrame(runFallbackFrame);
+      }
+    };
+
+    const markFallbackGeometryDirty = () => {
+      fallbackGeometryDirty = true;
+      scheduleFallbackFrame();
+    };
+
+    const handleFallbackVisibility = () => {
+      if (document.hidden) {
+        stopFallbackFrame();
+      } else {
+        scheduleFallbackFrame();
+      }
+    };
+
+    function stopFallback(clear = true) {
+      if (fallbackActive) {
+        fallbackActive = false;
+        stopFallbackFrame();
+        fallbackResizeObserver?.disconnect();
+        fallbackResizeObserver = undefined;
+        window.removeEventListener("scroll", scheduleFallbackFrame);
+        window.removeEventListener("resize", markFallbackGeometryDirty);
+        window.removeEventListener("load", markFallbackGeometryDirty);
+        document.removeEventListener("visibilitychange", handleFallbackVisibility);
+      }
+
+      if (clear) {
+        geometry = undefined;
+        activeId = null;
+        hideScene();
+      }
+    }
+
+    const startFallback = () => {
+      if (
+        fallbackActive ||
+        destroyed ||
+        typeof window.IntersectionObserver !== "function"
+      ) {
+        return;
+      }
+
+      fallbackActive = true;
+      fallbackGeometryDirty = true;
+      window.addEventListener("scroll", scheduleFallbackFrame, { passive: true });
+      window.addEventListener("resize", markFallbackGeometryDirty, { passive: true });
+      if (document.readyState !== "complete") {
+        window.addEventListener("load", markFallbackGeometryDirty);
+      }
+      document.addEventListener("visibilitychange", handleFallbackVisibility);
+
+      if (typeof window.ResizeObserver === "function") {
+        try {
+          fallbackResizeObserver = new ResizeObserver(markFallbackGeometryDirty);
+          const observedElements = new Set([
+            main,
+            document.querySelector("#publication-list"),
+            ...groups.map(({ section }) => section),
+          ]);
+          observedElements.forEach((element) => {
+            if (element) fallbackResizeObserver.observe(element);
+          });
+        } catch {
+          fallbackResizeObserver?.disconnect();
+          fallbackResizeObserver = undefined;
+        }
+      }
+
+      scheduleFallbackFrame();
+    };
+
+    const handleDesktopChange = (event) => {
+      if (event.matches) {
+        stopFallback();
+      } else {
+        startFallback();
+      }
+    };
+
+    if (typeof journeyDesktop.addEventListener === "function") {
+      journeyDesktop.addEventListener("change", handleDesktopChange);
+    } else if (typeof journeyDesktop.addListener === "function") {
+      journeyDesktop.addListener(handleDesktopChange);
+    }
+
+    if (journeyDesktop.matches) {
+      hideScene();
+    } else {
+      startFallback();
+    }
+
+    const setGeometry = (nextGeometry) => {
+      if (destroyed || !journeyDesktop.matches) return;
+      applyGeometry(nextGeometry);
+    };
+
+    const setActive = (nextId) => {
+      if (destroyed || !journeyDesktop.matches) return;
+      applyActive(nextId);
+    };
+
+    const destroy = () => {
+      if (destroyed) return;
+      destroyed = true;
+      stopFallback();
+      clearTransitionFrame();
+      clearAlignTimer();
+      if (typeof journeyDesktop.removeEventListener === "function") {
+        journeyDesktop.removeEventListener("change", handleDesktopChange);
+      } else if (typeof journeyDesktop.removeListener === "function") {
+        journeyDesktop.removeListener(handleDesktopChange);
+      }
+      ambient.classList.remove("scene-ready", "scene-animated", "scene-aligning");
+      ambient.style.removeProperty("--scene-top");
+      ambient.style.removeProperty("--scene-height");
+      main.removeAttribute("data-active-scene");
+    };
+
+    return { setActive, setGeometry, destroy };
+  };
+
+  const createCardController = () => {
+    const targetElements = [
+      ...document.querySelectorAll(
+        ".research-card, .lab-profile, .professor-card, " +
+          ".current-members-grid .person-card, .contact-block"
+      ),
+    ];
+    const emptyController = { destroy() {} };
+    if (!targetElements.length || !precisePointer) return emptyController;
+
+    const targets = new Map(
+      targetElements.map((element) => [
+        element,
+        { maximumTilt: element.classList.contains("research-card") ? 2 : 1.2 },
+      ])
+    );
+    const handlers = new Map();
+    const resetTimers = new Map();
+    let activeCard;
+    let activeBounds;
+    let boundsDirty = true;
+    let pointerX = 0;
+    let pointerY = 0;
+    let animationFrame;
+    let visibilityObserver;
+    let interactive = false;
+
+    const clearFrame = () => {
+      if (animationFrame !== undefined) cancelAnimationFrame(animationFrame);
+      animationFrame = undefined;
+    };
+
+    const removeCardProperties = (card) => {
+      card.style.removeProperty("--card-spot-x");
+      card.style.removeProperty("--card-spot-y");
+      card.style.removeProperty("--card-tilt-x");
+      card.style.removeProperty("--card-tilt-y");
+    };
+
+    const cancelResetTimer = (card) => {
+      const timer = resetTimers.get(card);
+      if (timer !== undefined) window.clearTimeout(timer);
+      resetTimers.delete(card);
+    };
+
+    const resetCard = (card, immediate = false) => {
+      if (!card) return;
+      cancelResetTimer(card);
+      card.classList.remove("card-active");
+      card.style.setProperty("--card-spot-x", "50%");
+      card.style.setProperty("--card-spot-y", "50%");
+      card.style.setProperty("--card-tilt-x", "0deg");
+      card.style.setProperty("--card-tilt-y", "0deg");
+
+      if (immediate) {
+        removeCardProperties(card);
+      } else {
+        const timer = window.setTimeout(() => {
+          removeCardProperties(card);
+          resetTimers.delete(card);
+        }, CARD_RESET_DURATION);
+        resetTimers.set(card, timer);
+      }
+
+      if (activeCard === card) {
+        clearFrame();
+        activeCard = undefined;
+        activeBounds = undefined;
+        boundsDirty = true;
+      }
+    };
+
+    const writeCardFrame = () => {
+      animationFrame = undefined;
+      if (!activeCard || !activeBounds || document.hidden) return;
+
+      const { maximumTilt } = targets.get(activeCard);
+      const normalizedX = clamp(
+        (pointerX - activeBounds.left) / Math.max(activeBounds.width, 1),
+        0,
+        1
+      );
+      const normalizedY = clamp(
+        (pointerY - activeBounds.top) / Math.max(activeBounds.height, 1),
+        0,
+        1
+      );
+      const rotateX = (0.5 - normalizedY) * maximumTilt * 2;
+      const rotateY = (normalizedX - 0.5) * maximumTilt * 2;
+
+      activeCard.style.setProperty(
+        "--card-spot-x",
+        (normalizedX * 100).toFixed(1) + "%"
+      );
+      activeCard.style.setProperty(
+        "--card-spot-y",
+        (normalizedY * 100).toFixed(1) + "%"
+      );
+      activeCard.style.setProperty("--card-tilt-x", rotateX.toFixed(3) + "deg");
+      activeCard.style.setProperty("--card-tilt-y", rotateY.toFixed(3) + "deg");
+    };
+
+    const scheduleCardFrame = () => {
+      if (animationFrame === undefined && activeCard && !document.hidden) {
+        animationFrame = requestAnimationFrame(writeCardFrame);
+      }
+    };
+
+    const updatePointer = (event) => {
+      if (!activeCard) return;
+      if (boundsDirty || !activeBounds) {
+        activeBounds = activeCard.getBoundingClientRect();
+        boundsDirty = false;
+      }
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      scheduleCardFrame();
+    };
+
+    const markBoundsDirty = () => {
+      if (activeCard) boundsDirty = true;
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden && activeCard) resetCard(activeCard, true);
+    };
+
+    const activate = () => {
+      if (
+        interactive ||
+        !precisePointer.matches ||
+        typeof window.IntersectionObserver !== "function"
+      ) {
+        return;
+      }
+
+      interactive = true;
+      visibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting && entry.target === activeCard) {
+            resetCard(activeCard, true);
+          }
+        });
+      });
+
+      targets.forEach((_config, card) => {
+        const handlePointerEnter = (event) => {
+          if (activeCard && activeCard !== card) resetCard(activeCard);
+          cancelResetTimer(card);
+          activeCard = card;
+          activeBounds = card.getBoundingClientRect();
+          boundsDirty = false;
+          card.classList.add("card-active");
+          updatePointer(event);
+        };
+        const handlePointerMove = (event) => {
+          if (activeCard !== card) return;
+          updatePointer(event);
+        };
+        const handlePointerLeave = () => {
+          if (activeCard === card) resetCard(card);
+        };
+
+        handlers.set(card, { handlePointerEnter, handlePointerMove, handlePointerLeave });
+        card.classList.add("card-interactive");
+        card.addEventListener("pointerenter", handlePointerEnter, { passive: true });
+        card.addEventListener("pointermove", handlePointerMove, { passive: true });
+        card.addEventListener("pointerleave", handlePointerLeave);
+        card.addEventListener("pointercancel", handlePointerLeave);
+        visibilityObserver.observe(card);
+      });
+
+      window.addEventListener("scroll", markBoundsDirty, { passive: true });
+      window.addEventListener("resize", markBoundsDirty, { passive: true });
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    };
+
+    const deactivate = () => {
+      if (!interactive) return;
+      interactive = false;
+      clearFrame();
+      visibilityObserver?.disconnect();
+      visibilityObserver = undefined;
+      window.removeEventListener("scroll", markBoundsDirty);
+      window.removeEventListener("resize", markBoundsDirty);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      targets.forEach((_config, card) => {
+        const cardHandlers = handlers.get(card);
+        if (cardHandlers) {
+          card.removeEventListener("pointerenter", cardHandlers.handlePointerEnter);
+          card.removeEventListener("pointermove", cardHandlers.handlePointerMove);
+          card.removeEventListener("pointerleave", cardHandlers.handlePointerLeave);
+          card.removeEventListener("pointercancel", cardHandlers.handlePointerLeave);
+        }
+        cancelResetTimer(card);
+        card.classList.remove("card-interactive", "card-active");
+        removeCardProperties(card);
+      });
+
+      handlers.clear();
+      activeCard = undefined;
+      activeBounds = undefined;
+      boundsDirty = true;
+    };
+
+    const handlePointerCapabilityChange = (event) => {
+      if (event.matches) {
+        activate();
+      } else {
+        deactivate();
+      }
+    };
+
+    if (typeof precisePointer.addEventListener === "function") {
+      precisePointer.addEventListener("change", handlePointerCapabilityChange);
+    } else if (typeof precisePointer.addListener === "function") {
+      precisePointer.addListener(handlePointerCapabilityChange);
+    }
+
+    activate();
+
+    const destroy = () => {
+      deactivate();
+      if (typeof precisePointer.removeEventListener === "function") {
+        precisePointer.removeEventListener("change", handlePointerCapabilityChange);
+      } else if (typeof precisePointer.removeListener === "function") {
+        precisePointer.removeListener(handlePointerCapabilityChange);
+      }
+    };
+
+    return { destroy };
+  };
+
+  const createJourneyController = ({
+    reduced = false,
+    onActiveChange,
+    onGeometryChange,
+  } = {}) => {
     const main = document.querySelector("main#home");
     const checkpointElements = new Map(
       JOURNEY_IDS.map((id) => [id, document.querySelector(`[data-journey-checkpoint="${id}"]`)])
@@ -421,6 +1021,8 @@
     let animationFrame;
     let resizeObserver;
     let preferenceReduced = reduced;
+    let activeCheckpointId = null;
+    const sceneTrackingEnabled = typeof onActiveChange === "function";
 
     const pageScrollY = () => window.scrollY || window.pageYOffset || 0;
     const formatCoordinate = (value) => Number(value.toFixed(2));
@@ -449,6 +1051,9 @@
     const hideSegments = () => {
       segmentDefinitions.forEach((segment) => resetSegment(segment));
       geometry = undefined;
+      activeCheckpointId = null;
+      safelyNotify(onGeometryChange, null);
+      safelyNotify(onActiveChange, null);
     };
 
     const buildRoute = (start, nodes, segmentTop, segmentEnd) => {
@@ -533,9 +1138,24 @@
           x: sideX[side],
           y: kickerBounds.top + scrollY - mainDocumentTop + kickerBounds.height / 2,
           sectionTop: sectionBounds.top + scrollY - mainDocumentTop,
+          sectionEnd: sectionBounds.bottom + scrollY - mainDocumentTop,
+          side,
         };
       });
       const pointById = new Map(points.map((point) => [point.id, point]));
+      const controlsBounds = document
+        .querySelector(".publication-controls")
+        ?.getBoundingClientRect();
+      const publicationListBounds = document
+        .querySelector("#publication-list")
+        ?.getBoundingClientRect();
+      const membersSection = document.querySelector("#members");
+      const professorBounds = membersSection
+        ?.querySelector(".professor-card")
+        ?.getBoundingClientRect();
+      const currentMembersGrid = membersSection?.querySelector(".current-members-grid");
+      const currentMembersGroup = currentMembersGrid?.closest(".member-group");
+      const currentMembersBounds = currentMembersGroup?.getBoundingClientRect();
       const configuredSegments = [];
       segmentDefinitions.filter(({ valid }) => !valid).forEach((segment) => resetSegment(segment));
 
@@ -551,12 +1171,6 @@
           ),
           y: entryBounds.top + scrollY - mainDocumentTop + entryBounds.height / 2,
         };
-        const controlsBounds = document
-          .querySelector(".publication-controls")
-          ?.getBoundingClientRect();
-        const publicationListBounds = document
-          .querySelector("#publication-list")
-          ?.getBoundingClientRect();
         const primaryPoints = primarySegment.ids.map((id) => pointById.get(id));
         const publicationsPoint = pointById.get("publications");
         const primaryTop = Math.max(entryPoint.y, 0);
@@ -619,6 +1233,41 @@
           documentY: mainDocumentTop + point.y,
           node: nodeElements.get(point.id),
         }));
+      const sceneCheckpoints = points.map((point) => {
+        let sceneEnd = point.sectionEnd;
+
+        if (point.id === "publications" && controlsBounds) {
+          sceneEnd = Math.min(
+            point.sectionEnd,
+            controlsBounds.bottom + scrollY - mainDocumentTop + 36,
+            publicationListBounds
+              ? publicationListBounds.top + scrollY - mainDocumentTop - 10
+              : point.sectionEnd
+          );
+        }
+
+        if (point.id === "members") {
+          const memberContentEnd = Math.max(
+            professorBounds ? professorBounds.bottom + scrollY - mainDocumentTop : point.sectionTop,
+            currentMembersBounds
+              ? currentMembersBounds.bottom + scrollY - mainDocumentTop
+              : point.sectionTop
+          );
+          sceneEnd = Math.min(point.sectionEnd, memberContentEnd + 36);
+        }
+
+        return {
+          id: point.id,
+          documentY: mainDocumentTop + point.y,
+          sceneTop: point.sectionTop,
+          sceneEnd: clamp(
+            Math.max(sceneEnd, point.sectionTop + 160),
+            point.sectionTop + 160,
+            mainHeight
+          ),
+          side: point.side,
+        };
+      });
 
       if (isStatic || !intersectionSupported) {
         checkpointPositions.forEach(({ node }) => {
@@ -627,8 +1276,35 @@
         });
       }
 
-      geometry = { segments: configuredSegments, checkpoints: checkpointPositions };
+      geometry = {
+        segments: configuredSegments,
+        checkpoints: checkpointPositions,
+        sceneCheckpoints,
+      };
       geometryDirty = false;
+      safelyNotify(onGeometryChange, {
+        mainDocumentTop,
+        mainHeight,
+        checkpoints: sceneCheckpoints,
+      });
+    };
+
+    const updateActiveState = (activationY) => {
+      if (!intersectionSupported) return;
+
+      const activeId = resolveActiveCheckpoint(geometry.checkpoints, activationY);
+
+      if (activeId !== activeCheckpointId) {
+        activeCheckpointId = activeId;
+        safelyNotify(onActiveChange, activeId);
+      }
+
+      geometry.checkpoints.forEach(({ id, documentY, node }) => {
+        const isActive = id === activeId;
+        node.classList.toggle("is-active", isActive);
+        node.classList.toggle("is-complete", !isActive && documentY < activationY);
+        node.classList.toggle("is-pending", !isActive && documentY >= activationY);
+      });
     };
 
     const updateProgress = () => {
@@ -645,23 +1321,7 @@
         segment.progress.style.strokeDashoffset = (1 - progress).toFixed(4);
       });
 
-      if (!intersectionSupported) return;
-
-      const nearest = geometry.checkpoints.reduce((closest, checkpoint) => {
-        const distance = Math.abs(checkpoint.documentY - activationY);
-        return !closest || distance < closest.distance ? { checkpoint, distance } : closest;
-      }, null);
-      const activeId =
-        nearest && nearest.distance <= Math.max(120, window.innerHeight * 0.28)
-          ? nearest.checkpoint.id
-          : null;
-
-      geometry.checkpoints.forEach(({ id, documentY, node }) => {
-        const isActive = id === activeId;
-        node.classList.toggle("is-active", isActive);
-        node.classList.toggle("is-complete", !isActive && documentY < activationY);
-        node.classList.toggle("is-pending", !isActive && documentY >= activationY);
-      });
+      updateActiveState(activationY);
     };
 
     const routeIsNearViewport = () => {
@@ -686,7 +1346,11 @@
 
       try {
         if (geometryDirty || !geometry) calculateGeometry(false);
-        updateProgress();
+        if (routeIsNearViewport()) {
+          updateProgress();
+        } else {
+          updateActiveState(pageScrollY() + window.innerHeight * JOURNEY_ACTIVE_LINE);
+        }
       } catch {
         deactivatePath();
       }
@@ -697,7 +1361,7 @@
         animationFrame === undefined &&
         pathActive &&
         !document.hidden &&
-        (force || geometryDirty || routeIsNearViewport())
+        (force || geometryDirty || sceneTrackingEnabled || routeIsNearViewport())
       ) {
         animationFrame = requestAnimationFrame(runFrame);
       }
@@ -709,7 +1373,7 @@
     };
 
     const handleScroll = () => {
-      if (geometry && !routeIsNearViewport()) {
+      if (geometry && !routeIsNearViewport() && !sceneTrackingEnabled) {
         stopFrame();
         return;
       }
@@ -999,7 +1663,12 @@
     root.classList.add("motion-enabled");
     const countController = createCountController();
     const revealController = createRevealController(countController);
-    const journeyController = createJourneyController();
+    const sceneController = createSceneController();
+    const journeyController = createJourneyController({
+      onActiveChange: sceneController.setActive,
+      onGeometryChange: sceneController.setGeometry,
+    });
+    const cardController = createCardController();
     const heroController = createHeroController();
     let disabled = false;
 
@@ -1016,6 +1685,8 @@
       if (disabled) return;
       disabled = true;
       revealController.destroy();
+      cardController.destroy();
+      sceneController.destroy();
       journeyController.reduce();
       heroController.destroy();
       root.classList.remove("motion-enabled");
@@ -1039,6 +1710,19 @@
     initHomepageMotion();
   } catch {
     root.classList.remove("motion-enabled");
+    const main = document.querySelector("main#home");
+    main?.removeAttribute("data-active-scene");
+    const ambient = document.querySelector("[data-scene-ambient]");
+    ambient?.classList.remove("scene-ready", "scene-animated", "scene-aligning");
+    ambient?.style.removeProperty("--scene-top");
+    ambient?.style.removeProperty("--scene-height");
+    document.querySelectorAll(".card-interactive, .card-active").forEach((element) => {
+      element.classList.remove("card-interactive", "card-active");
+      element.style.removeProperty("--card-spot-x");
+      element.style.removeProperty("--card-spot-y");
+      element.style.removeProperty("--card-tilt-x");
+      element.style.removeProperty("--card-tilt-y");
+    });
     document.querySelectorAll(".journey-network").forEach((element) => {
       element.classList.remove("journey-ready", "journey-static");
     });
