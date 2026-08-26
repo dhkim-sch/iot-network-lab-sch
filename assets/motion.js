@@ -2,6 +2,7 @@
   const MOTION_DURATION = 520;
   const MOTION_STAGGER = 75;
   const MOTION_MAX_DELAY = 320;
+  const PERSONAL_MOMENT_STAGGER = 80;
   const COUNT_DURATION = 700;
   const HERO_EASING = 0.12;
   const HERO_SETTLE_THRESHOLD = 0.001;
@@ -70,6 +71,11 @@
 
     addTarget(document.querySelector(".quick-stats"));
     addStaggered(document.querySelectorAll(".publication-section"));
+
+    addTarget(document.querySelector(".personal-journeys-copy"));
+    [...document.querySelectorAll(".personal-postcard-slot")].forEach((element, index) => {
+      addTarget(element, (index + 1) * PERSONAL_MOMENT_STAGGER);
+    });
 
     const currentMembersGrid = document.querySelector(".current-members-grid");
     const currentMembersGroup = currentMembersGrid?.parentElement;

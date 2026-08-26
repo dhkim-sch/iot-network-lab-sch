@@ -168,6 +168,99 @@ const renderProfile = () => {
   });
 };
 
+const renderPersonalMoments = () => {
+  const host = document.querySelector(".personal-journeys");
+  const content = document.querySelector("#personal-journeys-content");
+  if (!host || !content) return;
+
+  const reset = () => {
+    content.textContent = "";
+    host.hidden = true;
+    host.classList.remove("has-single-moment");
+  };
+
+  reset();
+
+  try {
+    const personalMoments = data?.professor?.personalMoments;
+    const hasText = (value) => typeof value === "string" && value.trim().length > 0;
+    const momentOrder = ["tokyo", "dubai"];
+
+    if (
+      !personalMoments ||
+      !hasText(personalMoments.eyebrow) ||
+      !hasText(personalMoments.heading) ||
+      !hasText(personalMoments.supportingText) ||
+      !Array.isArray(personalMoments.moments)
+    ) {
+      return;
+    }
+
+    const moments = personalMoments.moments
+      .filter(
+        (moment) =>
+          moment &&
+          momentOrder.includes(moment.key) &&
+          hasText(moment.src) &&
+          hasText(moment.alt) &&
+          hasText(moment.caption)
+      )
+      .sort((first, second) => momentOrder.indexOf(first.key) - momentOrder.indexOf(second.key));
+
+    if (!moments.length) return;
+
+    const fragment = document.createDocumentFragment();
+    const copy = make("div", "personal-journeys-copy");
+    const title = make("h3", "", personalMoments.heading.trim());
+    title.id = "personal-journeys-title";
+
+    copy.append(make("p", "section-kicker", personalMoments.eyebrow.trim()));
+    copy.append(title);
+    copy.append(make("p", "personal-journeys-supporting", personalMoments.supportingText.trim()));
+
+    const stack = make("div", "personal-postcard-stack");
+
+    moments.forEach((moment) => {
+      const slot = make(
+        "div",
+        `personal-postcard-slot personal-postcard-slot-${moment.key}`
+      );
+      const figure = make(
+        "figure",
+        `personal-postcard personal-postcard-${moment.key}`
+      );
+      const image = make("img");
+      const caption = make("figcaption", "", moment.caption.trim());
+
+      figure.dataset.fallback = "Photo unavailable";
+      image.alt = moment.alt.trim();
+      image.width = 480;
+      image.height = 640;
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.addEventListener(
+        "error",
+        () => {
+          figure.classList.add("is-image-missing");
+        },
+        { once: true }
+      );
+      image.src = moment.src.trim();
+
+      figure.append(image, caption);
+      slot.append(figure);
+      stack.append(slot);
+    });
+
+    fragment.append(copy, stack);
+    content.append(fragment);
+    host.classList.toggle("has-single-moment", moments.length === 1);
+    host.hidden = false;
+  } catch {
+    reset();
+  }
+};
+
 const renderResearch = () => {
   setText(
     "#research-summary",
@@ -390,5 +483,6 @@ renderResearch();
 renderPublications();
 renderMembers();
 renderContact();
+renderPersonalMoments();
 wireNavigation();
 wirePublicationControls();

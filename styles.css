@@ -632,6 +632,12 @@ html.motion-enabled .hero-network-ready .hero-network-ring {
   margin-top: 0;
 }
 
+.about-aside {
+  display: grid;
+  min-width: 0;
+  gap: 28px;
+}
+
 .lab-profile {
   padding: 26px;
   background: var(--white);
@@ -665,6 +671,159 @@ html.motion-enabled .hero-network-ready .hero-network-ring {
 .lab-profile dd {
   margin: 4px 0 0;
   font-weight: 800;
+}
+
+.personal-journeys {
+  min-width: 0;
+  padding: 2px 6px 0;
+}
+
+.personal-journeys[hidden] {
+  display: none;
+}
+
+#personal-journeys-content {
+  min-width: 0;
+}
+
+.personal-journeys-copy h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.08rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.personal-journeys-supporting {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.personal-postcard-stack {
+  position: relative;
+  width: min(100%, 230px);
+  height: 194px;
+  margin: 16px auto 0;
+}
+
+.personal-postcard-slot {
+  position: absolute;
+  width: 132px;
+  height: 176px;
+}
+
+.personal-postcard-slot-tokyo {
+  top: 18px;
+  left: 0;
+}
+
+.personal-postcard-slot-dubai {
+  top: 0;
+  right: 0;
+}
+
+.personal-postcard {
+  --postcard-rotation: 0deg;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #dfe9f2;
+  border: 4px solid var(--white);
+  border-radius: 10px;
+  box-shadow: 0 12px 26px rgba(16, 37, 75, 0.22);
+  transform: rotate(var(--postcard-rotation));
+  transition:
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.personal-postcard-tokyo {
+  --postcard-rotation: -2deg;
+}
+
+.personal-postcard-dubai {
+  --postcard-rotation: 2deg;
+}
+
+.personal-postcard::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 38px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-align: center;
+  opacity: 0;
+}
+
+.personal-postcard img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 180ms ease;
+}
+
+.personal-postcard figcaption {
+  position: absolute;
+  z-index: 2;
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  padding: 5px 6px;
+  color: var(--white);
+  background: rgba(7, 22, 43, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.22;
+  text-wrap: balance;
+  backdrop-filter: blur(5px);
+}
+
+.personal-postcard.is-image-missing::before {
+  content: attr(data-fallback);
+  opacity: 1;
+}
+
+.personal-postcard.is-image-missing img {
+  opacity: 0;
+}
+
+.personal-journeys.has-single-moment .personal-postcard-slot {
+  top: 8px;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+html.motion-enabled .personal-journeys-copy.motion-reveal,
+html.motion-enabled .personal-postcard-slot.motion-reveal {
+  transform: translateY(12px);
+}
+
+html.motion-enabled .personal-journeys-copy.motion-reveal.motion-visible,
+html.motion-enabled .personal-postcard-slot.motion-reveal.motion-visible {
+  transform: translateY(0);
+}
+
+html.motion-enabled
+  .personal-journeys.has-single-moment
+  .personal-postcard-slot.motion-reveal {
+  transform: translate(-50%, 12px);
+}
+
+html.motion-enabled
+  .personal-journeys.has-single-moment
+  .personal-postcard-slot.motion-reveal.motion-visible {
+  transform: translate(-50%, 0);
 }
 
 .research-grid {
@@ -906,6 +1065,11 @@ html.motion-enabled .hero-network-ready .hero-network-ring {
   display: grid;
   grid-template-columns: minmax(320px, 410px) minmax(0, 1fr);
   gap: 22px;
+}
+
+.members-layout > *,
+.member-groups > * {
+  min-width: 0;
 }
 
 .professor-card,
@@ -1581,6 +1745,11 @@ html.motion-enabled .join-content.motion-reveal.motion-visible > .section-kicker
 }
 
 @media (hover: hover) and (pointer: fine) {
+  .personal-postcard:hover {
+    box-shadow: 0 16px 30px rgba(16, 37, 75, 0.26);
+    transform: translateY(-2px) rotate(var(--postcard-rotation));
+  }
+
   .research-card:hover {
     border-color: rgba(28, 154, 214, 0.55);
     box-shadow:
@@ -1681,6 +1850,11 @@ html.motion-enabled .join-content.motion-reveal.motion-visible > .section-kicker
   .members-layout,
   .about-grid {
     grid-template-columns: 1fr;
+  }
+
+  .about-aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
   }
 }
 
@@ -1867,6 +2041,53 @@ html.motion-enabled .join-content.motion-reveal.motion-visible > .section-kicker
 }
 
 @media (max-width: 620px) {
+  .about-aside {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .personal-journeys {
+    padding: 0;
+  }
+
+  #personal-journeys-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 166px;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .personal-postcard-stack {
+    width: 166px;
+    height: 140px;
+    margin: 0;
+  }
+
+  .personal-postcard-slot {
+    width: 92px;
+    height: 123px;
+  }
+
+  .personal-postcard-slot-tokyo {
+    top: 17px;
+  }
+
+  .personal-postcard figcaption {
+    right: 4px;
+    bottom: 4px;
+    left: 4px;
+    padding: 4px;
+    font-size: 0.72rem;
+  }
+
+  .personal-journeys.has-single-moment #personal-journeys-content {
+    grid-template-columns: minmax(0, 1fr) 92px;
+  }
+
+  .personal-journeys.has-single-moment .personal-postcard-stack {
+    width: 92px;
+  }
+
   .hero {
     gap: 20px;
     padding: 48px 20px 58px;
@@ -1941,6 +2162,18 @@ html.motion-enabled .join-content.motion-reveal.motion-visible > .section-kicker
 
   .site-footer {
     padding: 26px 20px;
+  }
+}
+
+@media (max-width: 340px) {
+  #personal-journeys-content,
+  .personal-journeys.has-single-moment #personal-journeys-content {
+    grid-template-columns: 1fr;
+  }
+
+  .personal-postcard-stack,
+  .personal-journeys.has-single-moment .personal-postcard-stack {
+    margin: 12px auto 0;
   }
 }
 
@@ -2057,6 +2290,15 @@ html.motion-enabled .join-content.motion-reveal.motion-visible > .section-kicker
 
   .join-content .button.primary {
     transition: none;
+  }
+
+  .personal-postcard,
+  .personal-postcard img {
+    transition: none;
+  }
+
+  .personal-postcard:hover {
+    transform: rotate(var(--postcard-rotation));
   }
 
   html.motion-enabled .section-heading.motion-reveal .section-kicker::before,
