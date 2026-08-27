@@ -186,39 +186,32 @@ const renderPersonalMoments = () => {
     const hasText = (value) => typeof value === "string" && value.trim().length > 0;
     const momentOrder = ["tokyo", "dubai"];
 
-    if (
-      !personalMoments ||
-      !hasText(personalMoments.eyebrow) ||
-      !hasText(personalMoments.heading) ||
-      !hasText(personalMoments.supportingText) ||
-      !Array.isArray(personalMoments.moments)
-    ) {
-      return;
-    }
+    if (!personalMoments || !Array.isArray(personalMoments.moments)) return;
 
-    const moments = personalMoments.moments
-      .filter(
-        (moment) =>
-          moment &&
-          momentOrder.includes(moment.key) &&
-          hasText(moment.src) &&
-          hasText(moment.alt) &&
-          hasText(moment.caption)
+    const moments = momentOrder
+      .map((key) =>
+        personalMoments.moments.find(
+          (moment) =>
+            moment && moment.key === key && hasText(moment.src) && hasText(moment.alt)
+        )
       )
-      .sort((first, second) => momentOrder.indexOf(first.key) - momentOrder.indexOf(second.key));
+      .filter(Boolean);
 
     if (!moments.length) return;
 
     const fragment = document.createDocumentFragment();
-    const copy = make("div", "personal-journeys-copy");
-    const title = make("h3", "", personalMoments.heading.trim());
-    title.id = "personal-journeys-title";
-
-    copy.append(make("p", "section-kicker", personalMoments.eyebrow.trim()));
-    copy.append(title);
-    copy.append(make("p", "personal-journeys-supporting", personalMoments.supportingText.trim()));
-
     const stack = make("div", "personal-postcard-stack");
+    const syncMomentState = () => {
+      const remainingSlots = stack.querySelectorAll(".personal-postcard-slot");
+
+      if (!remainingSlots.length) {
+        reset();
+        return;
+      }
+
+      host.classList.toggle("has-single-moment", remainingSlots.length === 1);
+      host.hidden = false;
+    };
 
     moments.forEach((moment) => {
       const slot = make(
@@ -230,9 +223,7 @@ const renderPersonalMoments = () => {
         `personal-postcard personal-postcard-${moment.key}`
       );
       const image = make("img");
-      const caption = make("figcaption", "", moment.caption.trim());
 
-      figure.dataset.fallback = "Photo unavailable";
       image.alt = moment.alt.trim();
       image.width = 480;
       image.height = 640;
@@ -241,21 +232,21 @@ const renderPersonalMoments = () => {
       image.addEventListener(
         "error",
         () => {
-          figure.classList.add("is-image-missing");
+          slot.remove();
+          syncMomentState();
         },
         { once: true }
       );
       image.src = moment.src.trim();
 
-      figure.append(image, caption);
+      figure.append(image);
       slot.append(figure);
       stack.append(slot);
     });
 
-    fragment.append(copy, stack);
+    fragment.append(stack);
     content.append(fragment);
-    host.classList.toggle("has-single-moment", moments.length === 1);
-    host.hidden = false;
+    syncMomentState();
   } catch {
     reset();
   }

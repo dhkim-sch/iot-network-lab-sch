@@ -25,21 +25,16 @@ window.LAB_DATA = {
     interests:
       "Internet of Things, energy management, in-vehicle intrusion detection systems, reinforcement learning for V2X, blockchain, 6G and security for wireless networks.",
     personalMoments: {
-      eyebrow: "Beyond the Lab",
-      heading: "Family journeys keep curiosity close.",
-      supportingText: "A personal glimpse beyond research.",
       moments: [
         {
           key: "tokyo",
           src: "assets/beyond-lab-tokyo.webp",
           alt: "Professor Daehee Kim and his daughter viewed from behind beside the illuminated Tokyo Skytree at night.",
-          caption: "With my daughter in Tokyo",
         },
         {
           key: "dubai",
           src: "assets/beyond-lab-dubai.webp",
           alt: "Professor Daehee Kim standing with his son in front of the Burj Khalifa in Dubai.",
-          caption: "With my son in Dubai",
         },
       ],
     },

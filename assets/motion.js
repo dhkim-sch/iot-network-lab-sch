@@ -72,9 +72,8 @@
     addTarget(document.querySelector(".quick-stats"));
     addStaggered(document.querySelectorAll(".publication-section"));
 
-    addTarget(document.querySelector(".personal-journeys-copy"));
     [...document.querySelectorAll(".personal-postcard-slot")].forEach((element, index) => {
-      addTarget(element, (index + 1) * PERSONAL_MOMENT_STAGGER);
+      addTarget(element, index * PERSONAL_MOMENT_STAGGER);
     });
 
     const currentMembersGrid = document.querySelector(".current-members-grid");
