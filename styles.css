@@ -985,10 +985,41 @@ html.motion-enabled
   font-weight: 900;
 }
 
+.publication-metadata {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
 .publication-type {
   display: inline-flex;
-  margin-bottom: 2px;
   color: var(--teal);
+}
+
+.patent-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.patent-status--registered {
+  color: var(--teal);
+  background: var(--blue-soft);
+  border-color: rgba(38, 83, 156, 0.2);
+}
+
+.patent-status--application {
+  color: var(--gold-ink);
+  background: rgba(231, 195, 115, 0.22);
+  border-color: rgba(114, 86, 43, 0.26);
 }
 
 .entry-link {

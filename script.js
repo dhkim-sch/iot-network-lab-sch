@@ -277,13 +277,35 @@ const publicationGroups = () => [
   ["patents", "Patents", data.publications.patents.map((citation) => ({ citation }))],
 ];
 
+const patentStatus = (citation) => {
+  if (citation.includes("등록번호")) {
+    return { label: "등록", className: "patent-status--registered" };
+  }
+
+  if (citation.includes("출원번호")) {
+    return { label: "출원", className: "patent-status--application" };
+  }
+
+  return null;
+};
+
 const renderPublicationItem = (item, key, category, index) => {
   const article = make("article", "publication-item");
   const yearLabel = make("time", "", extractYear(item.citation) || String(index + 1));
   const body = make("div");
   const citation = formattedCitation(item.citation, key === "journals");
+  const metadata = make("div", "publication-metadata");
 
-  body.append(make("span", "publication-type", category));
+  metadata.append(make("span", "publication-type", category));
+
+  if (key === "patents") {
+    const status = patentStatus(item.citation);
+    if (status) {
+      metadata.append(make("span", `patent-status ${status.className}`, status.label));
+    }
+  }
+
+  body.append(metadata);
   body.append(citation);
 
   if (item.url) {
