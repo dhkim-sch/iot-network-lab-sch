@@ -277,16 +277,25 @@ const publicationGroups = () => [
   ["patents", "Patents", data.publications.patents.map((citation) => ({ citation }))],
 ];
 
+const patentStatusDisplay = new Map([
+  ["registered", { label: "등록", className: "patent-status--registered" }],
+  ["application", { label: "출원", className: "patent-status--application" }],
+]);
+
 const patentStatus = (citation) => {
   if (citation.includes("등록번호")) {
-    return { label: "등록", className: "patent-status--registered" };
+    return patentStatusDisplay.get("registered");
   }
 
   if (citation.includes("출원번호")) {
-    return { label: "출원", className: "patent-status--application" };
+    return patentStatusDisplay.get("application");
   }
 
-  return null;
+  const override = Object.entries(data.publications.patentStatusOverrides || {}).find(
+    ([identifier]) => citation.includes(identifier)
+  );
+
+  return patentStatusDisplay.get(override?.[1]) || null;
 };
 
 const renderPublicationItem = (item, key, category, index) => {
